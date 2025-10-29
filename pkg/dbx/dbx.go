@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"time"
 
-	db_conf "github.com/gbroccoli/HeiCRM/pkg/config"
+	dbconf "github.com/gbroccoli/HeiCRM/pkg/config"
 	_ "github.com/lib/pq"
 )
 
@@ -24,12 +24,12 @@ var DB *sql.DB
 
 func DSN() string {
 	config := &configDB{
-		Host:    db_conf.G().Database.Host,
-		Port:    db_conf.G().Database.Port,
-		User:    db_conf.G().Database.User,
-		Pass:    db_conf.G().Database.Pass,
-		Name:    db_conf.G().Database.Name,
-		SSLMode: db_conf.G().Database.SSLMode,
+		Host:    dbconf.G().Database.Host,
+		Port:    dbconf.G().Database.Port,
+		User:    dbconf.G().Database.User,
+		Pass:    dbconf.G().Database.Pass,
+		Name:    dbconf.G().Database.Name,
+		SSLMode: dbconf.G().Database.SSLMode,
 	}
 
 	return fmt.Sprintf(

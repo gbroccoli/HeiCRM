@@ -1,14 +1,14 @@
 package routes
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gbroccoli/HeiCRM/services/auth/internal/handler"
+	"github.com/gin-gonic/gin"
+)
 
-func Mount(r *gin.Engine) {
+func Mount(r *gin.Engine, h *handler.Handler) {
 	auth := r.Group("/auth")
 	{
-		auth.POST("/login")
-		auth.POST("/logout")
-		auth.POST("/refresh")
-		auth.POST("/refresh")
-		auth.GET("/me")
+		auth.POST("/login", h.Login)
+		auth.POST("/register", h.Register)
 	}
 }
