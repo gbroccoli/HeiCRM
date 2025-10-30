@@ -13,6 +13,11 @@ type Config struct {
 	Env         string `yaml:"env"`
 	ServiceName string `yaml:"service_name"`
 
+	Jwt struct {
+		Alg       string `yaml:"alg"`
+		SecretKey string `yaml:"secret_key"`
+	} `yaml:"jwt"`
+
 	Database struct {
 		Host           string `yaml:"host"`
 		Port           string `yaml:"port"`
@@ -22,13 +27,6 @@ type Config struct {
 		SSLMode        string `yaml:"sslmode"`
 		MigrationsPath string `yaml:"migrations_path"`
 	} `yaml:"database"`
-
-	JWT struct {
-		Issuer      string `yaml:"issuer"`
-		Audience    string `yaml:"audience"`
-		Ed25519Seed string `yaml:"ed25519_seed"`
-		KeyID       string `yaml:"key_id"`
-	} `yaml:"jwt"`
 
 	AccessTokenTTL  string `yaml:"access_token_ttl"`  // используем как строку (e.g. "15m")
 	RefreshTokenTTL string `yaml:"refresh_token_ttl"` // (e.g. "720h")

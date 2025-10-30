@@ -6,6 +6,7 @@ import (
 
 	"github.com/gbroccoli/HeiCRM/pkg/config"
 	"github.com/gbroccoli/HeiCRM/pkg/dbx"
+	"github.com/gbroccoli/HeiCRM/pkg/jwt"
 	"github.com/gbroccoli/HeiCRM/pkg/logx"
 	"github.com/gbroccoli/HeiCRM/services/auth/internal/handler"
 	"github.com/gbroccoli/HeiCRM/services/auth/internal/routes"
@@ -24,11 +25,15 @@ func main() {
 	log.Println("starting auth service")
 	config.MustLoad("config.yaml")
 
+	// get pid process for find in system monitor
 	log.Printf("PID=%d", os.Getpid())
 
 	// create default
 	g := gin.Default()
+	g.Use(gin.Recovery())
+	g.Use(gin.Logger())
 
+	// init connect to database
 	log.Println("Connecting to database")
 	dbx.Open()
 	defer func() {
@@ -38,10 +43,16 @@ func main() {
 		}
 	}()
 
-	h := handler.New(dbx.G())
+	// init jwt
+	j := jwt.New([]byte(config.G().Jwt.SecretKey))
 
+	// init base model handler
+	h := handler.New(dbx.G(), j)
+
+	// mount routers
 	routes.Mount(g, h)
 
+	// run api servers
 	log.Println("starting http server")
 	err = g.Run(":8080")
 	if err != nil {
