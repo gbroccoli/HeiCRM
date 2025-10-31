@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gbroccoli/HeiCRM/services/auth/internal/tools"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,19 +23,21 @@ func (register *RegisterRequest) IsTgSend() bool {
 	return *register.TgSend
 }
 
+//tokenH, err := tools.ExtractToken(c)
+//if err != nil {
+//c.JSON(200, gin.H{"error": err.Error()})
+//return
+//}
+//
+//isTokenAccess, err := h.JWT.VerifyAccessToken(tokenH)
+//if err != nil {
+//c.JSON(200, gin.H{"error": err.Error()})
+//}
+//
+//c.JSON(200, gin.H{"token": isTokenAccess})
+//return
+
 func (h *Handler) Register(c *gin.Context) {
-
-	tokenH, err := tools.ExtractToken(c)
-	if err != nil {
-		c.JSON(200, gin.H{"error": err.Error()})
-		return
-	}
-
-	_, err = h.JWT.Verify(tokenH)
-	if err != nil {
-		c.JSON(200, gin.H{"error": err.Error()})
-		return
-	}
 
 	var candidate RegisterRequest
 	if err := c.ShouldBindJSON(&candidate); err != nil {
@@ -44,18 +45,24 @@ func (h *Handler) Register(c *gin.Context) {
 		return
 	}
 
-	token, err := h.JWT.GenerateAccessToken("vovo.r", 2)
+	// create user
+
+	// Auto-generate a 24-character password
+	password := h.PasswordManager.GeneratePassword()
+
+	// Generate the bcrypt hash to store in the database
+	hash, err := h.PasswordManager.GenerateHash(password)
 	if err != nil {
-		log.Fatalf("Error generating token: %v", err)
-		return
+		log.Fatalln(hash, err)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"code": http.StatusOK,
 		"data": gin.H{
-			"name":    candidate.Name,
-			"tg_send": candidate.IsTgSend(),
-			"token":   token,
+			"name":     candidate.Name,
+			"tg_send":  candidate.IsTgSend(),
+			"password": password,
+			"hash":     hash,
 		},
 	})
 }

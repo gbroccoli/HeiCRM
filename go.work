@@ -6,4 +6,5 @@ use (
 	pkg/logx
 	pkg/dbx
 	pkg/jwt
+	pkg/password
 )
