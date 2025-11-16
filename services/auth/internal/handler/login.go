@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,15 @@ func (h *Handler) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректные данные запроса."})
 		return
 	}
+
+	tokenAccess, err := h.JWT.GenerateAccessToken(userParams.Email, 1, "access")
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Fatal(err.Error())
+		return
+	}
+
+	c.Header("Authorization", "Bearer "+tokenAccess)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success login",
