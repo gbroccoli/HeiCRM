@@ -21,5 +21,9 @@ func (h *Handler) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success login",
+		"data": gin.H{
+			"email":    userParams.Email,
+			"password": userParams.Password,
+		},
 	})
 }

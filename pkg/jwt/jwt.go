@@ -3,7 +3,6 @@ package jwt
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -24,7 +23,7 @@ type JWT struct {
 
 type FieldsClaims struct {
 	Email string `json:"email"`
-	Role  string `json:"role"`
+	Role  uint   `json:"role"`
 	Type  string `json:"type"`
 	jwt.RegisteredClaims
 }
@@ -37,7 +36,7 @@ func New(secret []byte) *JWT {
 	}
 }
 
-func (j *JWT) GenerateAccessToken(email string, role int, tokenType string) (string, error) {
+func (j *JWT) GenerateAccessToken(email string, role uint, tokenType string) (string, error) {
 
 	if email == "" {
 		return "", fmt.Errorf("email cannot be empty")
@@ -47,18 +46,20 @@ func (j *JWT) GenerateAccessToken(email string, role int, tokenType string) (str
 		tokenType = "access" // default значение
 	}
 
+	now := time.Now()
+
 	claims := &FieldsClaims{
 		email,
-		strconv.Itoa(role),
+		role,
 		tokenType,
 		jwt.RegisteredClaims{
 			ID:        uuid.New().String(),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * time.Minute)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(now.Add(30 * time.Minute)),
+			IssuedAt:  jwt.NewNumericDate(now),
 			Subject:   email,
 			Issuer:    j.Issuer,
 			Audience:  jwt.ClaimStrings{j.Audience},
-			NotBefore: jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(now),
 		},
 	}
 
@@ -72,23 +73,25 @@ func (j *JWT) GenerateAccessToken(email string, role int, tokenType string) (str
 	return tokenString, nil
 }
 
-func (j *JWT) GenerateRefreshToken(email string, role int) (string, error) {
+func (j *JWT) GenerateRefreshToken(email string) (string, error) {
 	if email == "" {
 		return "", fmt.Errorf("fields cannot be empty")
 	}
 
+	now := time.Now()
+
 	claims := &FieldsClaims{
 		email,
-		strconv.Itoa(role),
+		0,
 		"refresh",
 		jwt.RegisteredClaims{
 			ID:        uuid.New().String(),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * time.Minute)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(now.Add(30 * 24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(now),
 			Subject:   email,
 			Issuer:    j.Issuer,
 			Audience:  jwt.ClaimStrings{j.Audience},
-			NotBefore: jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(now),
 		},
 	}
 
@@ -102,7 +105,7 @@ func (j *JWT) GenerateRefreshToken(email string, role int) (string, error) {
 }
 
 func (j *JWT) Verify(token string) (*FieldsClaims, error) {
-	tokens, err := jwt.ParseWithClaims(token, &FieldsClaims{}, func(tok *jwt.Token) (interface{}, error) {
+	t, err := jwt.ParseWithClaims(token, &FieldsClaims{}, func(tok *jwt.Token) (interface{}, error) {
 		if _, ok := tok.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", tok.Header["alg"])
 		}
@@ -110,20 +113,23 @@ func (j *JWT) Verify(token string) (*FieldsClaims, error) {
 	})
 
 	if err != nil {
-		if errors.Is(err, jwt.ErrSignatureInvalid) {
+		switch {
+		case errors.Is(err, jwt.ErrTokenExpired), errors.Is(err, jwt.ErrTokenNotValidYet):
 			return nil, ErrExpiredToken
+		case errors.Is(err, jwt.ErrTokenSignatureInvalid):
+			return nil, ErrInvalidToken // или ErrInvalidSignature
+		default:
+			return nil, fmt.Errorf("%w: %v", ErrInvalidToken, err)
 		}
-
-		return nil, fmt.Errorf("%w: %v", ErrInvalidToken, err)
 	}
 
-	if !tokens.Valid {
+	if !t.Valid {
 		return nil, ErrInvalidToken
 	}
 
-	claims, ok := tokens.Claims.(*FieldsClaims)
+	claims, ok := t.Claims.(*FieldsClaims)
 	if !ok {
-		return nil, fmt.Errorf("%w: %v", ErrInvalidToken, err)
+		return nil, ErrInvalidToken
 	}
 
 	return claims, nil
