@@ -16,5 +16,11 @@ func Mount(r *gin.Engine, h *handler.Handler) {
 		{
 			middleGroup.POST("/register", h.Register)
 		}
+
+		refreshMiddleware := auth.Group("/refresh")
+		refreshMiddleware.Use(midleware.RefreshTokenMiddleware(h.JWT))
+		{
+			middleGroup.POST("/", h.RefreshToken)
+		}
 	}
 }
