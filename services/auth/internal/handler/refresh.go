@@ -1,28 +1,41 @@
 package handler
 
 import (
-	"log"
 	"net/http"
 
-	"github.com/gbroccoli/HeiCRM/services/auth/internal/tools"
 	"github.com/gin-gonic/gin"
 )
 
 func (h *Handler) RefreshToken(c *gin.Context) {
+	email, ok := c.Get("email")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code": http.StatusUnauthorized,
+			"msg":  "No token",
+		})
+	}
 
-	token, err := tools.ExtractToken(c)
+	role, ok := c.Get("role")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code": http.StatusUnauthorized,
+			"msg":  "No token",
+		})
+	}
+
+	newAccessToken, err := h.JWT.GenerateAccessToken(email.(string), role.(uint), "access")
+
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code": http.StatusUnauthorized,
 			"msg":  "No token",
 		})
-		log.Fatal("Token extract error:", err)
-		return
 	}
 
-	//newAccessToken := h.JWT.GenerateAccessToken()
+	c.Header("Authorization", "Bearer "+newAccessToken)
 
 	c.JSON(200, gin.H{
 		"code": 200,
+		"msg":  "OK",
 	})
 }

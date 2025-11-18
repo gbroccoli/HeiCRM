@@ -3,6 +3,7 @@ package handler
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +28,25 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
+	refreshToken, err := h.JWT.GenerateRefreshToken(userParams.Email)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Fatal(err.Error())
+		return
+	}
+
+	expires := 30 * 24 * time.Hour
+
 	c.Header("Authorization", "Bearer "+tokenAccess)
+	c.SetCookie(
+		"refresh",
+		refreshToken,
+		int(expires),
+		"/auth/refresh",
+		"",
+		true,
+		true,
+	)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success login",
