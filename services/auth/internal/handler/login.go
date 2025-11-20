@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -13,6 +16,32 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type User struct {
+	Id       uint64 `json:"id"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	RoleID   uint   `json:"role_id"`
+	TgSend   *bool  `json:"tg_send"`
+}
+
+func GetUser(db *sql.DB, email, password string) (*User, error) {
+	user := &User{}
+
+	query := `SELECT id, name, email, password, role_id, tg_send FROM users WHERE email = $1`
+	err := db.QueryRow(query, email).Scan(&user.Id, &user.Name, user.Email, user.Password, &user.RoleID, &user.TgSend)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("user not fount")
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 func (h *Handler) Login(c *gin.Context) {
 
 	var userParams LoginRequest
@@ -22,6 +51,20 @@ func (h *Handler) Login(c *gin.Context) {
 	}
 
 	// logic no database users
+	user, err := GetUser(h.DB, userParams.Email, userParams.Password)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	checkPassword := h.PasswordManager.CheckHash(user.Password, userParams.Password)
+	if !checkPassword {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"code": 0401,
+			"msg":  "Invalid login or password",
+		})
+		return
+	}
 
 	tokenAccess, err := h.JWT.GenerateAccessToken(userParams.Email, 1, "access")
 	if err != nil {

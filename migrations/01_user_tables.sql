@@ -1,9 +1,24 @@
+-- +goose Up
+-- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS users (
-    id bigserial primary key,
-    name varchar not null,
-    email varchar not null,
-    password varchar(255) not null,
-    tg_send boolean default false,
-    created_at timestamptz,
-    updated_at timestamptz
-)
+    id bigserial PRIMARY KEY,
+    name varchar(255) NOT NULL,
+    email varchar(255) NOT NULL UNIQUE,
+    password varchar(255) NOT NULL,
+    role_id smallint NOT NULL DEFAULT 0,
+    tg_send boolean NOT NULL DEFAULT false,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+    updated_at timestamptz NOT NULL DEFAULT NOW()
+);
+
+-- Index for faster email lookups during login
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+-- Index for role-based queries
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role_id);
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+DROP TABLE IF EXISTS users CASCADE;
+-- +goose StatementEnd

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 
@@ -11,6 +12,7 @@ type RegisterRequest struct {
 	Name     string `json:"name" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
+	RoleID   uint64 `json:"role_id" binding:"required"`
 	TgSend   *bool  `json:"tg_send"`
 }
 
@@ -36,6 +38,23 @@ func (register *RegisterRequest) IsTgSend() bool {
 //
 //c.JSON(200, gin.H{"token": isTokenAccess})
 //return
+
+func CreateUser(db *sql.DB, user *RegisterRequest) (*uint64, error) {
+	query := `INSERT INTO users (name, email, password, role_id, tg_send) VALUES (?, ?, ?, ?, ?)`
+	res, err := db.Exec(query, user.Name, user.Email, user.Password, user.RoleID, user.TgSend)
+
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	uid := uint64(id)
+	return &uid, nil
+}
 
 func (h *Handler) Register(c *gin.Context) {
 
