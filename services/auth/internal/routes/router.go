@@ -11,16 +11,14 @@ func Mount(r *gin.Engine, h *handler.Handler) {
 	{
 		auth.POST("/login", h.Login)
 
+		auth.POST("/refresh", midleware.RefreshTokenMiddleware(h.JWT), h.RefreshToken)
+
 		middleGroup := auth.Group("/")
 		middleGroup.Use(midleware.AuthMiddleware(h.JWT))
 		{
 			middleGroup.POST("/register", h.Register)
-		}
-
-		refreshMiddleware := auth.Group("/refresh")
-		refreshMiddleware.Use(midleware.RefreshTokenMiddleware(h.JWT))
-		{
-			middleGroup.POST("/", h.RefreshToken)
+			middleGroup.POST("/logout", h.Logout)
+			middleGroup.GET("/me", h.MeUsers)
 		}
 	}
 }

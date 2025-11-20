@@ -21,6 +21,8 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
+	// logic no database users
+
 	tokenAccess, err := h.JWT.GenerateAccessToken(userParams.Email, 1, "access")
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -36,8 +38,6 @@ func (h *Handler) Login(c *gin.Context) {
 	}
 
 	expires := 30 * 24 * time.Hour
-
-	c.Header("Authorization", "Bearer "+tokenAccess)
 	c.SetCookie(
 		"refresh",
 		refreshToken,
@@ -50,9 +50,6 @@ func (h *Handler) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success login",
-		"data": gin.H{
-			"email":    userParams.Email,
-			"password": userParams.Password,
-		},
+		"token":   tokenAccess,
 	})
 }

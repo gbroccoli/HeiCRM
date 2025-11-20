@@ -2,10 +2,10 @@ package midleware
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gbroccoli/HeiCRM/pkg/jwt"
 	_ "github.com/gbroccoli/HeiCRM/pkg/jwt"
+	"github.com/gbroccoli/HeiCRM/services/auth/internal/tools"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,15 +19,20 @@ func AuthMiddleware(j *jwt.JWT) gin.HandlerFunc {
 			return
 		}
 
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
+		token, err := tools.ExtractToken(c)
+		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": "invalid authorization header format",
+				"error": err.Error(),
 			})
 			return
 		}
 
-		token := parts[1]
+		if token == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid token",
+			})
+			return
+		}
 
 		claims, err := j.VerifyAccessToken(token)
 		if err != nil {
@@ -46,23 +51,21 @@ func AuthMiddleware(j *jwt.JWT) gin.HandlerFunc {
 
 func RefreshTokenMiddleware(j *jwt.JWT) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
+		refreshToken, err := c.Cookie("refresh")
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid token",
+			})
+			return
+		}
+		if refreshToken == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "missing authorization header",
 			})
 			return
 		}
 
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": "invalid authorization header format",
-			})
-			return
-		}
-
-		token := parts[1]
+		token := refreshToken
 		claims, err := j.VerifyRefreshToken(token)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{

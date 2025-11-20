@@ -32,10 +32,8 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 		})
 	}
 
-	c.Header("Authorization", "Bearer "+newAccessToken)
-
 	c.JSON(200, gin.H{
-		"code": 200,
-		"msg":  "OK",
+		"code":  200,
+		"token": newAccessToken,
 	})
 }
