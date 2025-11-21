@@ -25,14 +25,14 @@ type User struct {
 	TgSend   *bool  `json:"tg_send"`
 }
 
-func GetUser(db *sql.DB, email, password string) (*User, error) {
+func getUser(db *sql.DB, email, password string) (*User, error) {
 	user := &User{}
 
 	query := `SELECT id, name, email, password, role_id, tg_send FROM users WHERE email = $1`
-	err := db.QueryRow(query, email).Scan(&user.Id, &user.Name, user.Email, user.Password, &user.RoleID, &user.TgSend)
+	err := db.QueryRow(query, email).Scan(&user.Id, &user.Name, &user.Email, &user.Password, &user.RoleID, &user.TgSend)
 
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, fmt.Errorf("user not fount")
+		return nil, fmt.Errorf("invalid email or password")
 	}
 
 	if err != nil {
@@ -50,17 +50,18 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	// logic no database users
-	user, err := GetUser(h.DB, userParams.Email, userParams.Password)
+	//logic no database users
+	user, err := getUser(h.DB, userParams.Email, userParams.Password)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	checkPassword := h.PasswordManager.CheckHash(user.Password, userParams.Password)
+	log.Println(checkPassword)
 	if !checkPassword {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"code": 0401,
+			"code": 401,
 			"msg":  "Invalid login or password",
 		})
 		return

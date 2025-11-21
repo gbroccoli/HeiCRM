@@ -11,7 +11,7 @@ import (
 type RegisterRequest struct {
 	Name     string `json:"name" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Password string `json:"password"`
 	RoleID   uint64 `json:"role_id" binding:"required"`
 	TgSend   *bool  `json:"tg_send"`
 }
@@ -25,35 +25,15 @@ func (register *RegisterRequest) IsTgSend() bool {
 	return *register.TgSend
 }
 
-//tokenH, err := tools.ExtractToken(c)
-//if err != nil {
-//c.JSON(200, gin.H{"error": err.Error()})
-//return
-//}
-//
-//isTokenAccess, err := h.JWT.VerifyAccessToken(tokenH)
-//if err != nil {
-//c.JSON(200, gin.H{"error": err.Error()})
-//}
-//
-//c.JSON(200, gin.H{"token": isTokenAccess})
-//return
-
-func CreateUser(db *sql.DB, user *RegisterRequest) (*uint64, error) {
-	query := `INSERT INTO users (name, email, password, role_id, tg_send) VALUES (?, ?, ?, ?, ?)`
-	res, err := db.Exec(query, user.Name, user.Email, user.Password, user.RoleID, user.TgSend)
+func createUser(db *sql.DB, user *RegisterRequest) (*uint64, error) {
+	query := `INSERT INTO users (name, email, password, role_id, tg_send) VALUES ($1, $2, $3, $4, $5);`
+	_, err := db.Exec(query, user.Name, user.Email, user.Password, user.RoleID, user.TgSend)
 
 	if err != nil {
 		return nil, err
 	}
 
-	id, err := res.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	uid := uint64(id)
-	return &uid, nil
+	return nil, nil
 }
 
 func (h *Handler) Register(c *gin.Context) {
@@ -65,6 +45,12 @@ func (h *Handler) Register(c *gin.Context) {
 	}
 
 	// create user
+	userDraft := &RegisterRequest{
+		Name:   candidate.Name,
+		Email:  candidate.Email,
+		RoleID: candidate.RoleID,
+		TgSend: candidate.TgSend,
+	}
 
 	// Auto-generate a 24-character password
 	password := h.PasswordManager.GeneratePassword()
@@ -73,6 +59,14 @@ func (h *Handler) Register(c *gin.Context) {
 	hash, err := h.PasswordManager.GenerateHash(password)
 	if err != nil {
 		log.Fatalln(hash, err)
+	}
+
+	userDraft.Password = string(hash)
+
+	_, err = createUser(h.DB, userDraft)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
