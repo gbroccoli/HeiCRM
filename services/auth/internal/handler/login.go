@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gbroccoli/HeiCRM/pkg/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -46,14 +47,17 @@ func (h *Handler) Login(c *gin.Context) {
 
 	var userParams LoginRequest
 	if err := c.ShouldBindJSON(&userParams); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректные данные запроса."})
+		response.ValidationError(c, "Invalid request data")
 		return
 	}
 
-	//logic no database users
 	user, err := getUser(h.DB, userParams.Email, userParams.Password)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"code": response.AuthRequired,
+			"msg":  "invalid email or password",
+		})
+		log.Print(err.Error())
 		return
 	}
 
@@ -61,23 +65,30 @@ func (h *Handler) Login(c *gin.Context) {
 	log.Println(checkPassword)
 	if !checkPassword {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"code": 401,
-			"msg":  "Invalid login or password",
+			"code": response.AuthRequired,
+			"msg":  "invalid email or password",
 		})
+		log.Print("invalid email or password")
 		return
 	}
 
 	tokenAccess, err := h.JWT.GenerateAccessToken(userParams.Email, 1, "access")
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		log.Fatal(err.Error())
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"code": response.TokenGenerationFailed,
+			"msg":  "an unexpected problem",
+		})
+		log.Printf("Failed to generate access token: %v", err)
 		return
 	}
 
 	refreshToken, err := h.JWT.GenerateRefreshToken(userParams.Email)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		log.Fatal(err.Error())
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"code": response.TokenGenerationFailed,
+			"msg":  "an unexpected problem",
+		})
+		log.Printf("Failed to generate refresh token: %v", err)
 		return
 	}
 
@@ -93,7 +104,8 @@ func (h *Handler) Login(c *gin.Context) {
 	)
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "success login",
-		"token":   tokenAccess,
+		"code":  response.OK,
+		"msg":   "successfully logged in",
+		"token": tokenAccess,
 	})
 }

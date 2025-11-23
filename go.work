@@ -6,5 +6,6 @@ use (
 	pkg/jwt
 	pkg/logx
 	pkg/password
+	pkg/response
 	services/auth
 )

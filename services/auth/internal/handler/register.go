@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gbroccoli/HeiCRM/pkg/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -40,7 +41,7 @@ func (h *Handler) Register(c *gin.Context) {
 
 	var candidate RegisterRequest
 	if err := c.ShouldBindJSON(&candidate); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректные данные запроса."})
+		response.ValidationError(c, "Invalid request data")
 		return
 	}
 
@@ -58,24 +59,28 @@ func (h *Handler) Register(c *gin.Context) {
 	// Generate the bcrypt hash to store in the database
 	hash, err := h.PasswordManager.GenerateHash(password)
 	if err != nil {
-		log.Fatalln(hash, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"code": response.InvalidData,
+			"msg":  err.Error(),
+		})
+		log.Printf("Failed to generate password hash: %v", err)
+		return
 	}
 
 	userDraft.Password = string(hash)
 
 	_, err = createUser(h.DB, userDraft)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"code": response.InvalidData,
+			"msg":  err.Error(),
+		})
+		log.Printf("Failed to create user: %v", err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": http.StatusOK,
-		"data": gin.H{
-			"name":     candidate.Name,
-			"tg_send":  candidate.IsTgSend(),
-			"password": password,
-			"hash":     hash,
-		},
+	c.JSON(http.StatusCreated, gin.H{
+		"code": response.Created,
+		"msg":  "user created",
 	})
 }
