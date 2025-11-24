@@ -96,15 +96,12 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	expires := time.Now().Add(30 * 24 * time.Hour)
+	h.R.Set(ctx, "user"+strconv.FormatUint(user.Id, 10), refreshToken, time.Duration(refreshToken.ExpiresAt.Unix()))
 
-	h.R.Set(ctx, "user"+strconv.FormatUint(user.Id, 10), refreshToken, time.Duration(expires.Unix()))
-
-	log.Println(expires)
 	c.SetCookie(
 		"refresh",
-		refreshToken,
-		int(expires.Unix()),
+		refreshToken.Token,
+		int(refreshToken.ExpiresAt.Unix()),
 		"/auth/refresh",
 		"",
 		true,
@@ -114,6 +111,6 @@ func (h *Handler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code":  response.OK,
 		"msg":   "successfully logged in",
-		"token": tokenAccess,
+		"token": tokenAccess.Token,
 	})
 }

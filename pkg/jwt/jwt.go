@@ -36,10 +36,15 @@ func New(secret []byte) *JWT {
 	}
 }
 
-func (j *JWT) GenerateAccessToken(email string, role uint, tokenType string) (string, error) {
+type ReturnDataToken struct {
+	Token     string    `json:"token"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+func (j *JWT) GenerateAccessToken(email string, role uint, tokenType string) (*ReturnDataToken, error) {
 
 	if email == "" {
-		return "", fmt.Errorf("email cannot be empty")
+		return nil, fmt.Errorf("email cannot be empty")
 	}
 
 	if tokenType == "" {
@@ -47,6 +52,7 @@ func (j *JWT) GenerateAccessToken(email string, role uint, tokenType string) (st
 	}
 
 	now := time.Now()
+	experise := now.Add(30 * time.Minute)
 
 	claims := &FieldsClaims{
 		email,
@@ -54,7 +60,7 @@ func (j *JWT) GenerateAccessToken(email string, role uint, tokenType string) (st
 		tokenType,
 		jwt.RegisteredClaims{
 			ID:        uuid.New().String(),
-			ExpiresAt: jwt.NewNumericDate(now.Add(30 * time.Minute)),
+			ExpiresAt: jwt.NewNumericDate(experise),
 			IssuedAt:  jwt.NewNumericDate(now),
 			Subject:   email,
 			Issuer:    j.Issuer,
@@ -67,18 +73,19 @@ func (j *JWT) GenerateAccessToken(email string, role uint, tokenType string) (st
 
 	tokenString, err := token.SignedString(j.SecretKey)
 	if err != nil {
-		return "", fmt.Errorf("Ошибка при подписании токена: %v\n", err)
+		return nil, fmt.Errorf("Ошибка при подписании токена: %v\n", err)
 	}
 
-	return tokenString, nil
+	return &ReturnDataToken{tokenString, experise}, nil
 }
 
-func (j *JWT) GenerateRefreshToken(email string, role uint) (string, error) {
+func (j *JWT) GenerateRefreshToken(email string, role uint) (*ReturnDataToken, error) {
 	if email == "" {
-		return "", fmt.Errorf("fields cannot be empty")
+		return nil, fmt.Errorf("fields cannot be empty")
 	}
 
 	now := time.Now()
+	experise := now.Add(30 * 24 * time.Hour)
 
 	claims := &FieldsClaims{
 		email,
@@ -86,7 +93,7 @@ func (j *JWT) GenerateRefreshToken(email string, role uint) (string, error) {
 		"refresh",
 		jwt.RegisteredClaims{
 			ID:        uuid.New().String(),
-			ExpiresAt: jwt.NewNumericDate(now.Add(30 * 24 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(experise),
 			IssuedAt:  jwt.NewNumericDate(now),
 			Subject:   email,
 			Issuer:    j.Issuer,
@@ -99,9 +106,9 @@ func (j *JWT) GenerateRefreshToken(email string, role uint) (string, error) {
 
 	tokenString, err := token.SignedString(j.SecretKey)
 	if err != nil {
-		return "", fmt.Errorf("Ошибка при подписании токена: %v\n", err)
+		return nil, fmt.Errorf("Ошибка при подписании токена: %v\n", err)
 	}
-	return tokenString, nil
+	return &ReturnDataToken{tokenString, experise}, nil
 }
 
 func (j *JWT) Verify(token string) (*FieldsClaims, error) {
