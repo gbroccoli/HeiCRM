@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gbroccoli/HeiCRM/pkg/response"
@@ -45,6 +47,8 @@ func getUser(db *sql.DB, email, password string) (*User, error) {
 
 func (h *Handler) Login(c *gin.Context) {
 
+	ctx := context.Background()
+
 	var userParams LoginRequest
 	if err := c.ShouldBindJSON(&userParams); err != nil {
 		response.ValidationError(c, "Invalid request data")
@@ -82,7 +86,7 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	refreshToken, err := h.JWT.GenerateRefreshToken(userParams.Email)
+	refreshToken, err := h.JWT.GenerateRefreshToken(userParams.Email, user.RoleID)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"code": response.TokenGenerationFailed,
@@ -93,6 +97,9 @@ func (h *Handler) Login(c *gin.Context) {
 	}
 
 	expires := time.Now().Add(30 * 24 * time.Hour)
+
+	h.R.Set(ctx, "user"+strconv.FormatUint(user.Id, 10), refreshToken, time.Duration(expires.Unix()))
+
 	log.Println(expires)
 	c.SetCookie(
 		"refresh",

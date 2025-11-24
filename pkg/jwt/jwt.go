@@ -73,7 +73,7 @@ func (j *JWT) GenerateAccessToken(email string, role uint, tokenType string) (st
 	return tokenString, nil
 }
 
-func (j *JWT) GenerateRefreshToken(email string) (string, error) {
+func (j *JWT) GenerateRefreshToken(email string, role uint) (string, error) {
 	if email == "" {
 		return "", fmt.Errorf("fields cannot be empty")
 	}
@@ -82,7 +82,7 @@ func (j *JWT) GenerateRefreshToken(email string) (string, error) {
 
 	claims := &FieldsClaims{
 		email,
-		0,
+		role,
 		"refresh",
 		jwt.RegisteredClaims{
 			ID:        uuid.New().String(),

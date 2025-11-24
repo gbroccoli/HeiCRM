@@ -8,6 +8,7 @@ import (
 	"github.com/gbroccoli/HeiCRM/pkg/dbx"
 	"github.com/gbroccoli/HeiCRM/pkg/jwt"
 	"github.com/gbroccoli/HeiCRM/pkg/logx"
+	"github.com/gbroccoli/HeiCRM/pkg/redisx"
 	"github.com/gbroccoli/HeiCRM/services/auth/internal/handler"
 	"github.com/gbroccoli/HeiCRM/services/auth/internal/routes"
 	"github.com/gin-gonic/gin"
@@ -43,11 +44,20 @@ func main() {
 		}
 	}()
 
+	// init redis
+	log.Println("Connecting to Redis")
+	redisx.Open()
+	defer func() {
+		if err := redisx.Close(); err != nil {
+			log.Printf("failed to close redis: %v", err)
+		}
+	}()
+
 	// init jwt
 	j := jwt.New([]byte(config.G().Jwt.SecretKey))
 
 	// init base model handler
-	h := handler.New(dbx.G(), j)
+	h := handler.New(dbx.G(), j, redisx.G())
 
 	// mount routers
 	routes.Mount(g, h)

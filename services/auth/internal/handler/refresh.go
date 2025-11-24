@@ -46,7 +46,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 		true,
 	)
 
-	refresToken, err := h.JWT.GenerateRefreshToken(email.(string))
+	newRefreshToken, err := h.JWT.GenerateRefreshToken(email.(string), role.(uint))
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code": response.InvalidToken,
@@ -58,7 +58,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 	expires := time.Now().Add(30 * 24 * time.Hour)
 	c.SetCookie(
 		"refresh",
-		refresToken,
+		newRefreshToken,
 		int(expires.Unix()),
 		"/auth/refresh",
 		"",
