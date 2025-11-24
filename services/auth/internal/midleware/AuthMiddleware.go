@@ -5,6 +5,7 @@ import (
 
 	"github.com/gbroccoli/HeiCRM/pkg/jwt"
 	_ "github.com/gbroccoli/HeiCRM/pkg/jwt"
+	"github.com/gbroccoli/HeiCRM/pkg/response"
 	"github.com/gbroccoli/HeiCRM/services/auth/internal/tools"
 	"github.com/gin-gonic/gin"
 )
@@ -16,6 +17,7 @@ func AuthMiddleware(j *jwt.JWT) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "missing authorization header",
 			})
+			c.Abort()
 			return
 		}
 
@@ -24,6 +26,7 @@ func AuthMiddleware(j *jwt.JWT) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": err.Error(),
 			})
+			c.Abort()
 			return
 		}
 
@@ -31,6 +34,7 @@ func AuthMiddleware(j *jwt.JWT) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "invalid token",
 			})
+			c.Abort()
 			return
 		}
 
@@ -39,6 +43,7 @@ func AuthMiddleware(j *jwt.JWT) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": err.Error(),
 			})
+			c.Abort()
 			return
 		}
 
@@ -54,14 +59,18 @@ func RefreshTokenMiddleware(j *jwt.JWT) gin.HandlerFunc {
 		refreshToken, err := c.Cookie("refresh")
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":  response.InvalidToken,
 				"error": "invalid token",
 			})
+			c.Abort()
 			return
 		}
 		if refreshToken == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"code":  response.InvalidToken,
 				"error": "missing authorization header",
 			})
+			c.Abort()
 			return
 		}
 
@@ -69,6 +78,7 @@ func RefreshTokenMiddleware(j *jwt.JWT) gin.HandlerFunc {
 		claims, err := j.VerifyRefreshToken(token)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"code":  response.InvalidToken,
 				"error": err.Error(),
 			})
 			return
@@ -76,6 +86,7 @@ func RefreshTokenMiddleware(j *jwt.JWT) gin.HandlerFunc {
 
 		c.Set("email", claims.Email)
 		c.Set("userID", claims.ID)
+		c.Set("role", claims.Role)
 		c.Next()
 	}
 }

@@ -92,11 +92,12 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	expires := 30 * 24 * time.Hour
+	expires := time.Now().Add(30 * 24 * time.Hour)
+	log.Println(expires)
 	c.SetCookie(
 		"refresh",
 		refreshToken,
-		int(expires),
+		int(expires.Unix()),
 		"/auth/refresh",
 		"",
 		true,

@@ -2,7 +2,9 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
+	"github.com/gbroccoli/HeiCRM/pkg/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,6 +23,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 			"code": http.StatusUnauthorized,
 			"msg":  "No token",
 		})
+		return
 	}
 
 	newAccessToken, err := h.JWT.GenerateAccessToken(email.(string), role.(uint), "access")
@@ -30,7 +33,38 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 			"code": http.StatusUnauthorized,
 			"msg":  "No token",
 		})
+		return
 	}
+
+	c.SetCookie(
+		"refresh",
+		"",
+		-1,
+		"/auth/refresh",
+		"",
+		true,
+		true,
+	)
+
+	refresToken, err := h.JWT.GenerateRefreshToken(email.(string))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code": response.InvalidToken,
+			"msg":  "No token",
+		})
+		return
+	}
+
+	expires := time.Now().Add(30 * 24 * time.Hour)
+	c.SetCookie(
+		"refresh",
+		refresToken,
+		int(expires.Unix()),
+		"/auth/refresh",
+		"",
+		true,
+		true,
+	)
 
 	c.JSON(200, gin.H{
 		"code":  200,
