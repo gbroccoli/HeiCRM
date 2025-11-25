@@ -21,11 +21,19 @@ func GetAddr() string {
 func Open() {
 	cfg := config.G()
 
-	Client = redis.NewClient(&redis.Options{
-		Addr:     GetAddr(),
-		Password: cfg.Redis.Password,
-		DB:       0, // default database
-	})
+	password := cfg.Redis.Password
+	if password == "" {
+		Client = redis.NewClient(&redis.Options{
+			Addr: GetAddr(),
+			DB:   5, // default database
+		})
+	} else {
+		Client = redis.NewClient(&redis.Options{
+			Addr:     GetAddr(),
+			Password: cfg.Redis.Password,
+			DB:       5, // default database
+		})
+	}
 
 	// Проверяем соединение
 	ctx := context.Background()

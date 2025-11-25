@@ -55,11 +55,10 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	expires := time.Now().Add(30 * 24 * time.Hour)
 	c.SetCookie(
 		"refresh",
-		newRefreshToken,
-		int(expires.Unix()),
+		newRefreshToken.Token,
+		int(time.Until(newRefreshToken.ExpiresAt).Seconds()),
 		"/auth/refresh",
 		"",
 		true,

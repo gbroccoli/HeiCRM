@@ -96,12 +96,25 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	h.R.Set(ctx, "user"+strconv.FormatUint(user.Id, 10), refreshToken, time.Duration(refreshToken.ExpiresAt.Unix()))
+	err = h.R.Set(
+		ctx,
+		"user"+strconv.FormatUint(user.Id, 10),
+		refreshToken.Token,
+		time.Until(refreshToken.ExpiresAt),
+	).Err()
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"code": response.InternalError,
+			"msg":  "failed to save session",
+		})
+		log.Printf("Failed to save refresh token to Redis: %v", err)
+		return
+	}
 
 	c.SetCookie(
 		"refresh",
 		refreshToken.Token,
-		int(refreshToken.ExpiresAt.Unix()),
+		int(time.Until(refreshToken.ExpiresAt).Seconds()),
 		"/auth/refresh",
 		"",
 		true,
