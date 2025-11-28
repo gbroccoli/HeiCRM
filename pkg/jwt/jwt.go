@@ -52,7 +52,7 @@ func (j *JWT) GenerateAccessToken(email string, role uint, tokenType string) (*R
 	}
 
 	now := time.Now()
-	experise := now.Add(30 * time.Minute)
+	expertise := now.Add(45 * time.Minute) // 45 min - balanced security for personal data
 
 	claims := &FieldsClaims{
 		email,
@@ -60,7 +60,7 @@ func (j *JWT) GenerateAccessToken(email string, role uint, tokenType string) (*R
 		tokenType,
 		jwt.RegisteredClaims{
 			ID:        uuid.New().String(),
-			ExpiresAt: jwt.NewNumericDate(experise),
+			ExpiresAt: jwt.NewNumericDate(expertise),
 			IssuedAt:  jwt.NewNumericDate(now),
 			Subject:   email,
 			Issuer:    j.Issuer,
@@ -76,7 +76,7 @@ func (j *JWT) GenerateAccessToken(email string, role uint, tokenType string) (*R
 		return nil, fmt.Errorf("Ошибка при подписании токена: %v\n", err)
 	}
 
-	return &ReturnDataToken{tokenString, experise}, nil
+	return &ReturnDataToken{tokenString, expertise}, nil
 }
 
 func (j *JWT) GenerateRefreshToken(email string, role uint) (*ReturnDataToken, error) {
@@ -85,7 +85,7 @@ func (j *JWT) GenerateRefreshToken(email string, role uint) (*ReturnDataToken, e
 	}
 
 	now := time.Now()
-	experise := now.Add(30 * 24 * time.Hour)
+	expertise := now.Add(30 * 24 * time.Hour)
 
 	claims := &FieldsClaims{
 		email,
@@ -93,7 +93,7 @@ func (j *JWT) GenerateRefreshToken(email string, role uint) (*ReturnDataToken, e
 		"refresh",
 		jwt.RegisteredClaims{
 			ID:        uuid.New().String(),
-			ExpiresAt: jwt.NewNumericDate(experise),
+			ExpiresAt: jwt.NewNumericDate(expertise),
 			IssuedAt:  jwt.NewNumericDate(now),
 			Subject:   email,
 			Issuer:    j.Issuer,
@@ -108,7 +108,7 @@ func (j *JWT) GenerateRefreshToken(email string, role uint) (*ReturnDataToken, e
 	if err != nil {
 		return nil, fmt.Errorf("Ошибка при подписании токена: %v\n", err)
 	}
-	return &ReturnDataToken{tokenString, experise}, nil
+	return &ReturnDataToken{tokenString, expertise}, nil
 }
 
 func (j *JWT) Verify(token string) (*FieldsClaims, error) {

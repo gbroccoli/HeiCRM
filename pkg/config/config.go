@@ -40,6 +40,13 @@ type Config struct {
 		Port     string `yaml:"port"`
 		Password string `yaml:"password"`
 	} `yaml:"redis"`
+
+	Serves struct {
+		Auth         string `yaml:"auth"`
+		Users        string `yaml:"users"`
+		Tickets      string `yaml:"tickets"`
+		Notification string `yaml:"notification"`
+	} `yaml:"serves"`
 }
 
 func Load(path string) (*Config, error) {

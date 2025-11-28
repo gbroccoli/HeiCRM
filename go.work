@@ -8,5 +8,6 @@ use (
 	pkg/password
 	pkg/redisx
 	pkg/response
+	services/apigateway
 	services/auth
 )

@@ -34,6 +34,9 @@ func main() {
 	g.Use(gin.Recovery())
 	g.Use(gin.Logger())
 
+	// CORS is now handled by API Gateway
+	// Requests should come through: Frontend -> Gateway (:8000) -> Auth Service (:8080)
+
 	// init connect to database
 	log.Println("Connecting to database")
 	dbx.Open()

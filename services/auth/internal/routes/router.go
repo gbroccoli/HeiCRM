@@ -7,11 +7,11 @@ import (
 )
 
 func Mount(r *gin.Engine, h *handler.Handler) {
-	auth := r.Group("/auth")
+	auth := r.Group("/")
 	{
 		auth.POST("/login", h.Login)
 
-		auth.POST("/refresh", midleware.RefreshTokenMiddleware(h.JWT), h.RefreshToken)
+		auth.POST("/refresh", midleware.RefreshTokenMiddleware(h.JWT, h.R), h.RefreshToken)
 
 		middleGroup := auth.Group("/")
 		middleGroup.Use(midleware.AuthMiddleware(h.JWT))
@@ -19,6 +19,7 @@ func Mount(r *gin.Engine, h *handler.Handler) {
 			middleGroup.POST("/register", h.Register)
 			middleGroup.POST("/logout", h.Logout)
 			middleGroup.GET("/me", h.MeUsers)
+			middleGroup.GET("/role")
 		}
 	}
 }

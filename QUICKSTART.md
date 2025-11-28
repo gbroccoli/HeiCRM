@@ -1,235 +1,123 @@
 # Quick Start Guide
 
-Быстрая инструкция по запуску проекта HeiCRM.
+Пошаговая инструкция для запуска HeiCRM в development режиме.
 
-## 1. Предварительные требования
+## Предварительные требования
 
-- Go 1.25.3 или выше
-- Docker и Docker Compose
-- Git
+- Go 1.25+
+- Docker Desktop (для PostgreSQL и Redis)
+- goose (для миграций): `go install github.com/pressly/goose/v3/cmd/goose@latest`
 
-## 2. Установка зависимостей
-
-```bash
-# Установить goose для миграций
-go install github.com/pressly/goose/v3/cmd/goose@latest
-
-# Убедиться, что goose добавлен в PATH
-# Linux/Mac: добавьте в ~/.bashrc или ~/.zshrc
-# export PATH=$PATH:$(go env GOPATH)/bin
-
-# Windows: добавьте %USERPROFILE%\go\bin в PATH
-```
-
-## 3. Настройка конфигурации
+## Шаг 1: Запуск инфраструктуры (PostgreSQL + Redis)
 
 ```bash
-# Скопировать пример конфигурации
-cp config.example.yaml config.yaml
+# Запустить Docker контейнеры
+docker compose up -d db redis
 
-# Отредактировать config.yaml
-# Обязательно установите:
-# - jwt.secret_key (длинная случайная строка)
-# - database.name (например, "crm")
-```
-
-Пример `config.yaml`:
-```yaml
-env: dev
-service_name: HeiCRM
-
-jwt:
-  secret_key: "your-super-secret-key-min-32-chars-long"
-  alg: HS256
-
-database:
-  host: localhost
-  port: 5432
-  user: postgres
-  password: root
-  name: crm
-  sslmode: disable
-
-access_token_ttl: "30m"
-refresh_token_ttl: "720h"
-
-nats:
-  url: "nats://localhost:4222"
-
-redis:
-  host: localhost
-  port: 6379
-  password: ""
-```
-
-## 4. Запуск инфраструктуры
-
-```bash
-# Запустить PostgreSQL и NATS
-docker compose up -d db nats
-
-# Проверить, что контейнеры запущены
-docker ps
-
-# Дождаться готовности PostgreSQL (обычно 5-10 секунд)
-# Можно проверить логи:
-docker logs database
-```
-
-## 5. Создание базы данных
-
-```bash
-# Подключиться к PostgreSQL
-docker exec -it database psql -U postgres
-
-# В консоли psql создать базу данных:
-CREATE DATABASE crm;
-
-# Выйти из psql
-\q
-```
-
-## 6. Применение миграций
-
-### Windows:
-```bash
-goose -dir migrations postgres "postgres://postgres:root@localhost:5432/crm?sslmode=disable" up
-```
-
-### Linux/Mac:
-```bash
-# Вариант 1: через Makefile
-make migrate-up
-
-# Вариант 2: через скрипт
-./scripts/migrate.sh up
-
-# Вариант 3: напрямую через goose
-goose -dir migrations postgres "postgres://postgres:root@localhost:5432/crm?sslmode=disable" up
-```
-
-Проверить статус миграций:
-```bash
-goose -dir migrations postgres "postgres://postgres:root@localhost:5432/crm?sslmode=disable" status
+# Проверить что контейнеры запущены
+docker compose ps
 ```
 
 Ожидаемый вывод:
 ```
-    Applied At                  Migration
-    =======================================
-    <timestamp>                 01_user_tables.sql
+NAME      IMAGE          STATUS        PORTS
+db        postgres:16    Up 5 seconds  0.0.0.0:5432->5432/tcp
+redis     redis:7        Up 5 seconds  0.0.0.0:6379->6379/tcp
 ```
 
-## 7. Запуск сервиса авторизации
+## Шаг 2: Применение миграций БД
 
 ```bash
+# Применить все миграции
+goose -dir migrations postgres "postgres://postgres:root@localhost:5432/crm?sslmode=disable" up
+
+# Проверить статус
+goose -dir migrations postgres "postgres://postgres:root@localhost:5432/crm?sslmode=disable" status
+```
+
+## Шаг 3: Запуск Auth Service
+
+**Открыть новый терминал (Terminal 1)**
+
+```bash
+# Перейти в корень проекта
+cd C:\Users\zerat\Desktop\HeiCRM
+
 # Запустить auth service
 go run ./services/auth/cmd/auth
-
-# Или собрать и запустить бинарник
-go build -o bin/auth ./services/auth/cmd/auth
-./bin/auth  # Windows: bin\auth.exe
 ```
 
-Сервис будет доступен на `http://localhost:8080`
+Ожидаемый вывод:
+```
+starting auth service
+PID=12345
+Connecting to database
+Connecting to Redis
+starting http server
+[GIN-debug] Listening and serving HTTP on :8080
+```
 
-## 8. Проверка работоспособности
+✅ Auth Service слушает на **http://localhost:8080**
 
-### Тест endpoint'а login:
+## Шаг 4: Запуск API Gateway
+
+**Открыть новый терминал (Terminal 2)**
 
 ```bash
-curl -X POST http://localhost:8080/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "password": "password123"
-  }'
+# Перейти в корень проекта
+cd C:\Users\zerat\Desktop\HeiCRM
+
+# Запустить API Gateway
+go run ./services/apigateway/cmd/gateway
+```
+
+Ожидаемый вывод:
+```
+Starting API Gateway
+PID=12346
+API Gateway listening on :8000
+Proxying auth service: http://localhost:8080
+[GIN-debug] Listening and serving HTTP on :8000
+```
+
+✅ API Gateway слушает на **http://localhost:8000**
+
+## Шаг 5: Проверка работоспособности
+
+### Health Check API Gateway
+```bash
+curl http://localhost:8000/api/v1/health
 ```
 
 Ожидаемый ответ:
 ```json
-{
-  "message": "success login",
-  "data": {
-    "email": "test@example.com",
-    "password": "password123"
-  }
-}
+{"status":"ok","service":"api-gateway"}
 ```
 
-В заголовках ответа будет токен:
-```
-Authorization: Bearer <jwt_token>
-```
-
-## 9. Структура проекта
-
-```
-HeiCRM/
-├── config.yaml                 # Конфигурация (не в git)
-├── config.example.yaml         # Пример конфигурации
-├── docker-compose.yml          # PostgreSQL + NATS
-├── migrations/                 # SQL миграции
-├── pkg/                        # Общие пакеты
-│   ├── config/                # Загрузка конфигурации
-│   ├── dbx/                   # Подключение к БД
-│   ├── jwt/                   # JWT токены
-│   ├── logx/                  # Логирование
-│   └── password/              # Хеширование паролей
-└── services/
-    └── auth/                  # Сервис авторизации
-        ├── cmd/auth/          # Entry point
-        └── internal/          # Внутренняя логика
-            ├── handler/       # HTTP handlers
-            ├── middleware/    # Middleware
-            └── routes/        # Роутинг
-```
-
-## 10. Полезные команды
-
+### Проверка Auth Service через Gateway
 ```bash
-# Логи базы данных
-docker logs database
-
-# Логи NATS
-docker logs nats
-
-# Подключиться к базе данных
-docker exec -it database psql -U postgres -d crm
-
-# Остановить инфраструктуру
-docker compose down
-
-# Остановить с удалением данных
-docker compose down -v
-
-# Форматирование кода
-go fmt ./...
-
-# Статический анализ
-go vet ./...
-
-# Запуск тестов
-go test ./...
+curl -X POST http://localhost:8000/api/v1/auth/login -H "Content-Type: application/json" -d "{\"email\":\"test@example.com\",\"password\":\"password123\"}"
 ```
 
-## Troubleshooting
+## Архитектура запросов
 
-### Ошибка "connection refused" при запуске сервиса
-- Проверьте, что PostgreSQL запущен: `docker ps`
-- Проверьте подключение: `docker exec -it database psql -U postgres -c "SELECT 1"`
+```
+Frontend (localhost:3000)
+    ↓
+API Gateway (localhost:8000) ← YOUR FRONTEND SHOULD CALL THIS
+    ↓ proxy
+Auth Service (localhost:8080) ← Internal
+    ↓
+PostgreSQL (localhost:5432)
+Redis (localhost:6379)
+```
 
-### Ошибка "database does not exist"
-- Создайте базу данных: `docker exec -it database psql -U postgres -c "CREATE DATABASE crm;"`
+## Остановка сервисов
 
-### Ошибка "goose: command not found"
-- Установите goose: `go install github.com/pressly/goose/v3/cmd/goose@latest`
-- Добавьте `$(go env GOPATH)/bin` в PATH
+### Остановить Go сервисы
+Нажмите `Ctrl+C` в терминалах
 
-### Ошибка "panic: global config is nil"
-- Убедитесь, что файл `config.yaml` существует
-- Проверьте формат YAML (пробелы, отступы)
-
-### Ошибка при применении миграций
-- Проверьте параметры подключения к БД в команде goose
-- Убедитесь, что база данных `crm` создана
+### Остановить Docker
+```bash
+docker compose down
+```

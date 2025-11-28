@@ -1,6 +1,10 @@
 package midleware
 
 import (
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
 	"net/http"
 
 	"github.com/gbroccoli/HeiCRM/pkg/jwt"
@@ -8,7 +12,14 @@ import (
 	"github.com/gbroccoli/HeiCRM/pkg/response"
 	"github.com/gbroccoli/HeiCRM/services/auth/internal/tools"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
+
+// hashToken creates SHA256 hash for Redis key lookups
+func hashToken(token string) string {
+	hash := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(hash[:])
+}
 
 func AuthMiddleware(j *jwt.JWT) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -54,8 +65,14 @@ func AuthMiddleware(j *jwt.JWT) gin.HandlerFunc {
 	}
 }
 
-func RefreshTokenMiddleware(j *jwt.JWT) gin.HandlerFunc {
+// RefreshTokenMiddleware validates refresh tokens with two-layer security:
+// 1. JWT signature verification (cryptographic validity)
+// 2. Redis presence check (not revoked via rotation)
+// This prevents reuse of rotated tokens and enables token revocation
+func RefreshTokenMiddleware(j *jwt.JWT, r *redis.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		ctx := context.Background()
+
 		refreshToken, err := c.Cookie("refresh")
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{
@@ -81,6 +98,28 @@ func RefreshTokenMiddleware(j *jwt.JWT) gin.HandlerFunc {
 				"code":  response.InvalidToken,
 				"error": err.Error(),
 			})
+			return
+		}
+
+		// Check if token exists in Redis (not revoked)
+		tokenHash := hashToken(token)
+		redisKey := fmt.Sprintf("refresh_token:%s", tokenHash)
+
+		exists, err := r.Exists(ctx, redisKey).Result()
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"code":  response.InternalError,
+				"error": "failed to verify token",
+			})
+			return
+		}
+
+		if exists == 0 {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"code":  response.InvalidToken,
+				"error": "token has been revoked or is invalid",
+			})
+			c.Abort()
 			return
 		}
 

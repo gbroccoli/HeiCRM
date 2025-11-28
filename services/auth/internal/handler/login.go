@@ -2,12 +2,13 @@ package handler
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gbroccoli/HeiCRM/pkg/response"
@@ -26,6 +27,13 @@ type User struct {
 	Password string `json:"password"`
 	RoleID   uint   `json:"role_id"`
 	TgSend   *bool  `json:"tg_send"`
+}
+
+// hashToken creates SHA256 hash of the token for use as Redis key
+// This prevents storing full JWT tokens in Redis keys and supports multiple sessions
+func hashToken(token string) string {
+	hash := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(hash[:])
 }
 
 func getUser(db *sql.DB, email, password string) (*User, error) {
@@ -66,7 +74,6 @@ func (h *Handler) Login(c *gin.Context) {
 	}
 
 	checkPassword := h.PasswordManager.CheckHash(user.Password, userParams.Password)
-	log.Println(checkPassword)
 	if !checkPassword {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"code": response.AuthRequired,
@@ -96,9 +103,15 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
+	// Store refresh token in Redis with hash-based key
+	// Key format: refresh_token:{sha256_hash} enables multiple sessions per user
+	// TTL matches JWT expiry (30 days) - sliding window on each /refresh
+	tokenHash := hashToken(refreshToken.Token)
+	redisKey := fmt.Sprintf("refresh_token:%s", tokenHash)
+
 	err = h.R.Set(
 		ctx,
-		"user"+strconv.FormatUint(user.Id, 10),
+		redisKey,
 		refreshToken.Token,
 		time.Until(refreshToken.ExpiresAt),
 	).Err()
@@ -115,7 +128,7 @@ func (h *Handler) Login(c *gin.Context) {
 		"refresh",
 		refreshToken.Token,
 		int(time.Until(refreshToken.ExpiresAt).Seconds()),
-		"/auth/refresh",
+		"/api/v1/auth/refresh",
 		"",
 		true,
 		true,

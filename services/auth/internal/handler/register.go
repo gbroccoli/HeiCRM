@@ -80,7 +80,8 @@ func (h *Handler) Register(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"code": response.Created,
-		"msg":  "user created",
+		"code":     response.Created,
+		"msg":      "user created",
+		"password": password,
 	})
 }
