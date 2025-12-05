@@ -39,10 +39,23 @@ func ReverseProxy(target string) gin.HandlerFunc {
 			req.URL.Path = path
 			req.URL.RawQuery = c.Request.URL.RawQuery
 
-			// Forward original headers
+			// Forward original headers (including Authorization, Cookie, etc.)
+			req.Header = c.Request.Header.Clone()
 			if _, ok := req.Header["User-Agent"]; !ok {
 				req.Header.Set("User-Agent", "")
 			}
+		}
+
+		// ModifyResponse to ensure cookies are properly forwarded to client
+		proxy.ModifyResponse = func(resp *http.Response) error {
+			// Explicitly copy Set-Cookie headers from backend response
+			// This ensures cookies set by the backend service reach the client
+			if cookies := resp.Header["Set-Cookie"]; len(cookies) > 0 {
+				for _, cookie := range cookies {
+					c.Writer.Header().Add("Set-Cookie", cookie)
+				}
+			}
+			return nil
 		}
 
 		// Handle errors

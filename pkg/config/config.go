@@ -18,6 +18,10 @@ type Config struct {
 		SecretKey string `yaml:"secret_key"`
 	} `yaml:"jwt"`
 
+	Cookie struct {
+		Domain string `yaml:"domain"` // e.g., ".yourdomain.com" for cross-subdomain cookies
+	} `yaml:"cookie"`
+
 	Database struct {
 		Host           string `yaml:"host"`
 		Port           string `yaml:"port"`

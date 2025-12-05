@@ -19,7 +19,7 @@ func Mount(r *gin.Engine, h *handler.Handler) {
 			middleGroup.POST("/register", h.Register)
 			middleGroup.POST("/logout", h.Logout)
 			middleGroup.GET("/me", h.MeUsers)
-			middleGroup.GET("/role")
+			middleGroup.GET("/role", h.Role)
 		}
 	}
 }

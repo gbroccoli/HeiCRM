@@ -1,9 +1,16 @@
-end: dev
+env: dev
 service_name: Exemple
 
 jwt:
   secret_key: ""
   alg: HS256
+
+cookie:
+  # Cookie domain for cross-subdomain cookies (production only)
+  # Examples:
+  #   - ".yourdomain.com" - works on api.yourdomain.com and crm.yourdomain.com
+  #   - "" (empty) - works only on same domain (localhost for dev)
+  domain: ""
 
 database:
   host: localhost

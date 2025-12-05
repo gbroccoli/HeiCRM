@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gbroccoli/HeiCRM/pkg/config"
 	"github.com/gbroccoli/HeiCRM/pkg/response"
 	"github.com/gin-gonic/gin"
 )
@@ -100,15 +101,32 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 		return
 	}
 
+	// Secure cookie only in production (requires HTTPS)
+	// For local development (http://localhost), use secure=false
+	cfg := config.G()
+	isProduction := cfg.Env == "production" || cfg.Env == "prod"
+
+	// SameSite=Lax allows cookie in cross-site GET and same-site POST
+	// For production with HTTPS, use SameSite=None for full cross-origin support
+	if isProduction {
+		c.SetSameSite(http.SameSiteNoneMode) // Requires Secure=true (HTTPS)
+	} else {
+		c.SetSameSite(http.SameSiteLaxMode) // Works without HTTPS in dev
+	}
+
+	// Domain for cross-subdomain cookies (e.g., ".yourdomain.com")
+	// Leave empty for same-domain cookies
+	cookieDomain := cfg.Cookie.Domain
+
 	// Set new refresh token cookie
 	c.SetCookie(
 		"refresh",
 		newRefreshToken.Token,
 		int(time.Until(newRefreshToken.ExpiresAt).Seconds()),
-		"/auth/refresh",
-		"",
-		true,
-		true,
+		"/api/v1/auth",
+		cookieDomain,
+		isProduction, // secure: true only in production
+		true,         // httpOnly: always true for security
 	)
 
 	c.JSON(http.StatusOK, gin.H{
