@@ -44,6 +44,18 @@ func ReverseProxy(target string) gin.HandlerFunc {
 			if _, ok := req.Header["User-Agent"]; !ok {
 				req.Header.Set("User-Agent", "")
 			}
+
+			// Set X-Forwarded-Proto to preserve original protocol (HTTP/HTTPS)
+			// This is crucial for services behind tunnels (ngrok, cloudflare) to know
+			// if they should set Secure flag on cookies
+			if c.Request.TLS != nil {
+				req.Header.Set("X-Forwarded-Proto", "https")
+			} else if proto := c.GetHeader("X-Forwarded-Proto"); proto != "" {
+				// Preserve existing X-Forwarded-Proto if already set by upstream proxy
+				req.Header.Set("X-Forwarded-Proto", proto)
+			} else {
+				req.Header.Set("X-Forwarded-Proto", "http")
+			}
 		}
 
 		// ModifyResponse to ensure cookies are properly forwarded to client
@@ -103,9 +115,30 @@ func ReverseProxyWithPrefix(target, stripPrefix string) gin.HandlerFunc {
 			req.URL.RawQuery = c.Request.URL.RawQuery
 
 			// Forward original headers
+			req.Header = c.Request.Header.Clone()
 			if _, ok := req.Header["User-Agent"]; !ok {
 				req.Header.Set("User-Agent", "")
 			}
+
+			// Set X-Forwarded-Proto to preserve original protocol (HTTP/HTTPS)
+			if c.Request.TLS != nil {
+				req.Header.Set("X-Forwarded-Proto", "https")
+			} else if proto := c.GetHeader("X-Forwarded-Proto"); proto != "" {
+				req.Header.Set("X-Forwarded-Proto", proto)
+			} else {
+				req.Header.Set("X-Forwarded-Proto", "http")
+			}
+		}
+
+		// ModifyResponse to ensure cookies are properly forwarded to client
+		proxy.ModifyResponse = func(resp *http.Response) error {
+			// Explicitly copy Set-Cookie headers from backend response
+			if cookies := resp.Header["Set-Cookie"]; len(cookies) > 0 {
+				for _, cookie := range cookies {
+					c.Writer.Header().Add("Set-Cookie", cookie)
+				}
+			}
+			return nil
 		}
 
 		// Handle errors

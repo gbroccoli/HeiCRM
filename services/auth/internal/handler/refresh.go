@@ -38,15 +38,17 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	// Get old refresh token from cookie (for deletion from Redis)
-	oldRefreshToken, err := c.Cookie("refresh")
-	if err != nil {
+	// Get old refresh token from middleware (already validated)
+	// The middleware sets "validRefreshToken" after checking all cookies
+	oldRefreshTokenValue, ok := c.Get("validRefreshToken")
+	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code": response.InvalidToken,
 			"msg":  "No refresh token",
 		})
 		return
 	}
+	oldRefreshToken := oldRefreshTokenValue.(string)
 
 	// Generate new access token
 	newAccessToken, err := h.JWT.GenerateAccessToken(email.(string), role.(uint), "access")
@@ -101,14 +103,16 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	// Secure cookie only in production (requires HTTPS)
-	// For local development (http://localhost), use secure=false
+	// Detect HTTPS - check both env and actual request protocol
+	// This handles tunnels (ngrok, cloudflare) that use HTTPS even in dev
 	cfg := config.G()
 	isProduction := cfg.Env == "production" || cfg.Env == "prod"
+	isHTTPS := isProduction || isRequestHTTPS(c)
 
-	// SameSite=Lax allows cookie in cross-site GET and same-site POST
-	// For production with HTTPS, use SameSite=None for full cross-origin support
-	if isProduction {
+	// SameSite strategy:
+	// - Lax: works for most cases, allows cross-site GET (good for dev)
+	// - None: required for cross-origin requests with credentials (needs Secure=true)
+	if isHTTPS {
 		c.SetSameSite(http.SameSiteNoneMode) // Requires Secure=true (HTTPS)
 	} else {
 		c.SetSameSite(http.SameSiteLaxMode) // Works without HTTPS in dev
@@ -118,15 +122,27 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 	// Leave empty for same-domain cookies
 	cookieDomain := cfg.Cookie.Domain
 
+	// Delete old cookies with incorrect path (cleanup from previous versions)
+	// This prevents duplicate cookies when path was changed from /api/v1/auth to /
+	c.SetCookie(
+		"refresh",
+		"",
+		-1,              // MaxAge -1 deletes the cookie
+		"/api/v1/auth",  // Old path
+		cookieDomain,
+		isHTTPS,
+		true,
+	)
+
 	// Set new refresh token cookie
 	c.SetCookie(
 		"refresh",
 		newRefreshToken.Token,
 		int(time.Until(newRefreshToken.ExpiresAt).Seconds()),
-		"/api/v1/auth",
+		"/", // Path: "/" allows cookie to be sent to all endpoints
 		cookieDomain,
-		isProduction, // secure: true only in production
-		true,         // httpOnly: always true for security
+		isHTTPS, // secure: true for HTTPS (production or tunnels)
+		true,    // httpOnly: always true for security
 	)
 
 	c.JSON(http.StatusOK, gin.H{

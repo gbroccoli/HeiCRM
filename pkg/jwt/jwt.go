@@ -22,9 +22,8 @@ type JWT struct {
 }
 
 type FieldsClaims struct {
-	Email string `json:"email"`
-	Role  uint   `json:"role"`
-	Type  string `json:"type"`
+	Role uint   `json:"role"`
+	Type string `json:"type"`
 	jwt.RegisteredClaims
 }
 
@@ -55,7 +54,6 @@ func (j *JWT) GenerateAccessToken(email string, role uint, tokenType string) (*R
 	expertise := now.Add(45 * time.Minute) // 45 min - balanced security for personal data
 
 	claims := &FieldsClaims{
-		email,
 		role,
 		tokenType,
 		jwt.RegisteredClaims{
@@ -88,7 +86,6 @@ func (j *JWT) GenerateRefreshToken(email string, role uint) (*ReturnDataToken, e
 	expertise := now.Add(30 * 24 * time.Hour)
 
 	claims := &FieldsClaims{
-		email,
 		role,
 		"refresh",
 		jwt.RegisteredClaims{

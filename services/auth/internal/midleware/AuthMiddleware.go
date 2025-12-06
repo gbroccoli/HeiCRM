@@ -58,7 +58,7 @@ func AuthMiddleware(j *jwt.JWT) gin.HandlerFunc {
 			return
 		}
 
-		c.Set("email", claims.Email)
+		c.Set("email", claims.Subject)
 		c.Set("role", claims.Role)
 		c.Set("userId", claims.ID)
 		c.Next()
@@ -73,59 +73,66 @@ func RefreshTokenMiddleware(j *jwt.JWT, r *redis.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := context.Background()
 
-		refreshToken, err := c.Cookie("refresh")
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code":  response.InvalidToken,
-				"error": "invalid token",
-			})
-			c.Abort()
-			return
+		// Get all cookies named "refresh" (there might be duplicates with different paths)
+		// This handles migration from /api/v1/auth to / path
+		cookies := c.Request.Cookies()
+		var refreshTokens []string
+		for _, cookie := range cookies {
+			if cookie.Name == "refresh" && cookie.Value != "" {
+				refreshTokens = append(refreshTokens, cookie.Value)
+			}
 		}
-		if refreshToken == "" {
+
+		if len(refreshTokens) == 0 {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"code":  response.InvalidToken,
-				"error": "missing authorization header",
-			})
-			c.Abort()
-			return
-		}
-
-		token := refreshToken
-		claims, err := j.VerifyRefreshToken(token)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"code":  response.InvalidToken,
-				"error": err.Error(),
+				"error": "missing refresh token",
 			})
 			return
 		}
 
-		// Check if token exists in Redis (not revoked)
-		tokenHash := hashToken(token)
-		redisKey := fmt.Sprintf("refresh_token:%s", tokenHash)
+		// Try each refresh token until we find a valid one
+		// This handles the case where old cookies with wrong path still exist
+		var validClaims *jwt.FieldsClaims
+		var validToken string
 
-		exists, err := r.Exists(ctx, redisKey).Result()
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"code":  response.InternalError,
-				"error": "failed to verify token",
-			})
-			return
+		for _, token := range refreshTokens {
+			// Verify JWT signature and expiry
+			claims, err := j.VerifyRefreshToken(token)
+			if err != nil {
+				continue // Try next token
+			}
+
+			// Check if token exists in Redis (not revoked)
+			tokenHash := hashToken(token)
+			redisKey := fmt.Sprintf("refresh_token:%s", tokenHash)
+
+			exists, err := r.Exists(ctx, redisKey).Result()
+			if err != nil {
+				continue // Try next token
+			}
+
+			if exists > 0 {
+				// Found valid token!
+				validClaims = claims
+				validToken = token
+				break
+			}
 		}
 
-		if exists == 0 {
+		if validClaims == nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"code":  response.InvalidToken,
 				"error": "token has been revoked or is invalid",
 			})
-			c.Abort()
 			return
 		}
 
-		c.Set("email", claims.Email)
-		c.Set("userID", claims.ID)
-		c.Set("role", claims.Role)
+		// Store valid token for the handler to use (for rotation)
+		c.Set("validRefreshToken", validToken)
+		c.Set("email", validClaims.Subject)
+		c.Set("userID", validClaims.ID)
+		c.Set("role", validClaims.Role)
 		c.Next()
 	}
 }
