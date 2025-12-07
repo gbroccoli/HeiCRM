@@ -5,6 +5,7 @@ use (
 	pkg/dbx
 	pkg/jwt
 	pkg/logx
+	pkg/models
 	pkg/password
 	pkg/redisx
 	pkg/response

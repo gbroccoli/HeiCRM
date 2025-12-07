@@ -99,7 +99,7 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	tokenAccess, err := h.JWT.GenerateAccessToken(userParams.Email, 1, "access")
+	tokenAccess, err := h.JWT.GenerateAccessToken(userParams.Email, user.RoleID, "access")
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"code": response.TokenGenerationFailed,
@@ -164,8 +164,8 @@ func (h *Handler) Login(c *gin.Context) {
 	c.SetCookie(
 		"refresh",
 		"",
-		-1,              // MaxAge -1 deletes the cookie
-		"/api/v1/auth",  // Old path
+		-1,             // MaxAge -1 deletes the cookie
+		"/api/v1/auth", // Old path
 		cookieDomain,
 		isHTTPS,
 		true,

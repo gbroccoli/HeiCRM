@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     name varchar(255) NOT NULL,
     email varchar(255) NOT NULL UNIQUE,
     password varchar(255) NOT NULL,
+    avatar varchar(255) NULL,
     role_id smallint NOT NULL DEFAULT 0,
     tg_send boolean NOT NULL DEFAULT false,
     created_at timestamptz NOT NULL DEFAULT NOW(),
