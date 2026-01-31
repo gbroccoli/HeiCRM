@@ -6,9 +6,11 @@ use (
 	pkg/jwt
 	pkg/logx
 	pkg/models
+	pkg/natsx
 	pkg/password
 	pkg/redisx
 	pkg/response
 	services/apigateway
 	services/auth
+	services/users
 )

@@ -36,7 +36,8 @@ type Config struct {
 	RefreshTokenTTL string `yaml:"refresh_token_ttl"` // (e.g. "720h")
 
 	NATS struct {
-		URL string `yaml:"url"`
+		Host string `yaml:"host"`
+		Port string `yaml:"port"`
 	} `yaml:"nats"`
 
 	Redis struct {

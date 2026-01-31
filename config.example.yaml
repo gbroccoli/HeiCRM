@@ -36,3 +36,6 @@ nats:
   host: localhost
   port: 4222
 
+serves:
+  auth: "http://localhost:8080"
+  users: "http://localhost:8081"

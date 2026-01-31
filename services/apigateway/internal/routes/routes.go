@@ -8,8 +8,8 @@ import (
 // ServiceConfig holds the configuration for each microservice
 type ServiceConfig struct {
 	AuthServiceURL string
+	UserServiceURL string
 	// Add more services here as they are created:
-	// UserServiceURL string
 	// TicketServiceURL string
 }
 
@@ -33,12 +33,13 @@ func Mount(r *gin.Engine, config ServiceConfig) {
 			})
 		})
 
+		// User service routes - proxy to users microservice
+		users := api.Group("/users")
+		{
+			users.Any("/*path", proxy.ReverseProxy(config.UserServiceURL))
+		}
+
 		// Future microservices will be added here:
-		// users := api.Group("/users")
-		// {
-		//     users.Any("/*path", proxy.ReverseProxy(config.UserServiceURL))
-		// }
-		//
 		// tickets := api.Group("/tickets")
 		// {
 		//     tickets.Any("/*path", proxy.ReverseProxy(config.TicketServiceURL))

@@ -64,11 +64,15 @@ func main() {
 		authUrl = "http://localhost:8080"
 	}
 
+	usersUrl := conf.Serves.Users
+	if usersUrl == "" {
+		usersUrl = "http://localhost:8081"
+	}
+
 	// Service configuration - microservice URLs
 	serviceConfig := routes.ServiceConfig{
 		AuthServiceURL: authUrl,
-		// Add more services as they are created:
-		// UserServiceURL: getEnv("USER_SERVICE_URL", "http://localhost:8081"),
+		UserServiceURL: usersUrl,
 	}
 
 	// Mount all routes
@@ -78,6 +82,7 @@ func main() {
 	port := getEnv("GATEWAY_PORT", "8000")
 	log.Printf("API Gateway listening on :%s", port)
 	log.Printf("Proxying auth service: %s", serviceConfig.AuthServiceURL)
+	log.Printf("Proxying users service: %s", serviceConfig.UserServiceURL)
 
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("Failed to start API Gateway: %v", err)

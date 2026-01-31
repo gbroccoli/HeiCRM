@@ -8,6 +8,8 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: root
+    networks:
+      - heicrm
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -19,14 +21,21 @@ services:
     image: nats:2
     container_name: nats
     command: [ "-js","-m","8222","-p","4222","-sd","/data" ]
-    ports: [ "4222:4222","8222:8222" ]
+#    ports: [ "4222:4222","8222:8222" ]
     volumes: [ "./nats:/data" ]
+    networks:
+      - heicrm
   redis:
     image: redis:alpine3.22
     container_name: redis_cache
     restart: unless-stopped
-    ports:
-      - "6379:6379"
+    networks:
+      - heicrm
+#    ports:
+#      - "6379"
 
 volumes:
   pgdata:
+
+networks:
+  heicrm:
