@@ -21,7 +21,7 @@ services:
     image: nats:2
     container_name: nats
     command: [ "-js","-m","8222","-p","4222","-sd","/data" ]
-#    ports: [ "4222:4222","8222:8222" ]
+    ports: [ "4222:4222","8222:8222" ]
     volumes: [ "./nats:/data" ]
     networks:
       - heicrm
@@ -31,8 +31,8 @@ services:
     restart: unless-stopped
     networks:
       - heicrm
-#    ports:
-#      - "6379"
+    ports:
+      - "6379:6379"
 
 volumes:
   pgdata:
