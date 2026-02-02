@@ -51,6 +51,16 @@ func (h *Handler) DeleteUser(c *gin.Context) {
 		return
 	}
 
+	// Log admin activity
+	if adminEmail, ok := c.Get("email"); ok {
+		if adminID, err := getUserIDByEmail(h.DB, adminEmail.(string)); err == nil {
+			logActivity(h.DB, adminID, "delete_user", map[string]interface{}{
+				"deleted_user_id":    userID,
+				"deleted_user_email": userEmail,
+			}, c)
+		}
+	}
+
 	// Publish NATS event
 	natsHandler.PublishUserDeactivated(h.NC, userID, userEmail)
 

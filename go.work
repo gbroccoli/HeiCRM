@@ -12,5 +12,6 @@ use (
 	pkg/response
 	services/apigateway
 	services/auth
+	services/buildings
 	services/users
 )

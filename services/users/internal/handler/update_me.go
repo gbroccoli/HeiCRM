@@ -63,6 +63,8 @@ func (h *Handler) UpdateMe(c *gin.Context) {
 		return
 	}
 
+	logActivity(h.DB, userID, "update_profile", req, c)
+
 	// Publish NATS event
 	natsHandler.PublishProfileUpdated(h.NC, userID, emailStr)
 

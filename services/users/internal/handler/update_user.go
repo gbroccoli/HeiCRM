@@ -100,6 +100,16 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 		return
 	}
 
+	// Log admin activity
+	if adminEmail, ok := c.Get("email"); ok {
+		if adminID, err := getUserIDByEmail(h.DB, adminEmail.(string)); err == nil {
+			logActivity(h.DB, adminID, "admin_update_user", map[string]interface{}{
+				"target_user_id": userID,
+				"changes":        req,
+			}, c)
+		}
+	}
+
 	// Publish NATS event
 	var userEmail string
 	h.DB.QueryRow("SELECT email FROM users WHERE id = $1", userID).Scan(&userEmail)

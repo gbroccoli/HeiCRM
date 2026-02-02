@@ -3,6 +3,7 @@ module github.com/gbroccoli/HeiCRM/services/users
 go 1.25.3
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/gin-gonic/gin v1.11.0
 	github.com/nats-io/nats.go v1.42.0
 )

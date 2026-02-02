@@ -49,6 +49,7 @@ type Config struct {
 	Serves struct {
 		Auth         string `yaml:"auth"`
 		Users        string `yaml:"users"`
+		Buildings    string `yaml:"buildings"`
 		Tickets      string `yaml:"tickets"`
 		Notification string `yaml:"notification"`
 	} `yaml:"serves"`

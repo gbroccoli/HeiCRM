@@ -45,8 +45,8 @@ func main() {
 	if cfg.Env == "production" || cfg.Env == "prod" {
 		// TODO: Replace with your actual production domains
 		allowedOrigins = append(allowedOrigins,
-			"https://crm.yourdomain.com",      // Production frontend
-			"https://app.yourdomain.com",       // Alternative domain
+			"https://crm.yourdomain.com", // Production frontend
+			"https://app.yourdomain.com", // Alternative domain
 		)
 	}
 
@@ -69,10 +69,16 @@ func main() {
 		usersUrl = "http://localhost:8081"
 	}
 
+	buildingsUrl := conf.Serves.Buildings
+	if buildingsUrl == "" {
+		buildingsUrl = "http://localhost:8082"
+	}
+
 	// Service configuration - microservice URLs
 	serviceConfig := routes.ServiceConfig{
-		AuthServiceURL: authUrl,
-		UserServiceURL: usersUrl,
+		AuthServiceURL:     authUrl,
+		UserServiceURL:     usersUrl,
+		BuildingServiceURL: buildingsUrl,
 	}
 
 	// Mount all routes
@@ -83,6 +89,7 @@ func main() {
 	log.Printf("API Gateway listening on :%s", port)
 	log.Printf("Proxying auth service: %s", serviceConfig.AuthServiceURL)
 	log.Printf("Proxying users service: %s", serviceConfig.UserServiceURL)
+	log.Printf("Proxying buildings service: %s", serviceConfig.BuildingServiceURL)
 
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("Failed to start API Gateway: %v", err)
