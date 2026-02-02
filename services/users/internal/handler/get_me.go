@@ -12,20 +12,20 @@ import (
 func (h *Handler) GetMe(c *gin.Context) {
 	email, exists := c.Get("email")
 	if !exists {
-		response.Unauthorized(c, "email not found in context")
+		response.Unauthorized(c, "Email не найден в контексте")
 		return
 	}
 
 	emailStr, ok := email.(string)
 	if !ok || emailStr == "" {
-		response.Unauthorized(c, "invalid email in token")
+		response.Unauthorized(c, "Некорректный email в токене")
 		return
 	}
 
 	userID, err := getUserIDByEmail(h.DB, emailStr)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			response.NotFoundError(c, "user not found")
+			response.NotFoundError(c, "Пользователь не найден")
 			return
 		}
 		response.DatabaseErrorResponse(c, err)
@@ -35,7 +35,7 @@ func (h *Handler) GetMe(c *gin.Context) {
 	user, err := getUserWithProfile(h.DB, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			response.NotFoundError(c, "user not found")
+			response.NotFoundError(c, "Пользователь не найден")
 			return
 		}
 		response.DatabaseErrorResponse(c, err)

@@ -13,7 +13,7 @@ func (h *Handler) Role(c *gin.Context) {
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"code":    http.StatusUnauthorized,
-			"message": "Unauthorized",
+			"message": "Не авторизован",
 		})
 		return
 	}
@@ -23,7 +23,7 @@ func (h *Handler) Role(c *gin.Context) {
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"code":    http.StatusUnauthorized,
-			"message": "Unauthorized",
+			"message": "Не авторизован",
 		})
 		return
 	}

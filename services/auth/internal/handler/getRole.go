@@ -11,7 +11,7 @@ func (h *Handler) GetRole(c *gin.Context) {
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"code":    http.StatusUnauthorized,
-			"message": "Unauthorized",
+			"message": "Не авторизован",
 		})
 		c.Abort()
 	}

@@ -59,7 +59,7 @@ func getUser(db *sql.DB, email, password string) (*User, error) {
 	err := db.QueryRow(query, email).Scan(&user.Id, &user.Name, &user.Email, &user.Password, &user.RoleID, &user.TgSend)
 
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, fmt.Errorf("invalid email or password")
+		return nil, fmt.Errorf("Неверный email или пароль")
 	}
 
 	if err != nil {
@@ -75,7 +75,7 @@ func (h *Handler) Login(c *gin.Context) {
 
 	var userParams LoginRequest
 	if err := c.ShouldBindJSON(&userParams); err != nil {
-		response.ValidationError(c, "Invalid request data")
+		response.ValidationError(c, "Некорректные данные запроса")
 		return
 	}
 
@@ -83,7 +83,7 @@ func (h *Handler) Login(c *gin.Context) {
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"code": response.AuthRequired,
-			"msg":  "invalid email or password",
+			"msg":  "Неверный email или пароль",
 		})
 		log.Print(err.Error())
 		return
@@ -93,7 +93,7 @@ func (h *Handler) Login(c *gin.Context) {
 	if !checkPassword {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"code": response.AuthRequired,
-			"msg":  "invalid email or password",
+			"msg":  "Неверный email или пароль",
 		})
 		log.Print("invalid email or password")
 		return
@@ -103,7 +103,7 @@ func (h *Handler) Login(c *gin.Context) {
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"code": response.TokenGenerationFailed,
-			"msg":  "an unexpected problem",
+			"msg":  "Непредвиденная ошибка",
 		})
 		log.Printf("Failed to generate access token: %v", err)
 		return
@@ -113,7 +113,7 @@ func (h *Handler) Login(c *gin.Context) {
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"code": response.TokenGenerationFailed,
-			"msg":  "an unexpected problem",
+			"msg":  "Непредвиденная ошибка",
 		})
 		log.Printf("Failed to generate refresh token: %v", err)
 		return
@@ -134,7 +134,7 @@ func (h *Handler) Login(c *gin.Context) {
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"code": response.InternalError,
-			"msg":  "failed to save session",
+			"msg":  "Не удалось сохранить сессию",
 		})
 		log.Printf("Failed to save refresh token to Redis: %v", err)
 		return
@@ -184,7 +184,7 @@ func (h *Handler) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":  response.OK,
-		"msg":   "successfully logged in",
+		"msg":   "Успешный вход",
 		"token": tokenAccess.Token,
 	})
 }

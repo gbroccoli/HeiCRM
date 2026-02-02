@@ -53,7 +53,7 @@ func main() {
 	j := jwt.New([]byte(config.G().Jwt.SecretKey))
 
 	// init handler
-	h := handler.New(dbx.G(), j)
+	h := handler.New(dbx.G(), j, natsx.G())
 
 	// start NATS subscribers
 	sub := natsub.NewSubscriber(natsx.G(), dbx.G())

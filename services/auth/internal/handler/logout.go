@@ -99,6 +99,6 @@ func (h *Handler) Logout(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"code": response.OK,
-		"msg":  "successfully logged out",
+		"msg":  "Успешный выход",
 	})
 }

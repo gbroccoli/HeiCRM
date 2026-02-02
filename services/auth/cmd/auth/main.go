@@ -8,6 +8,7 @@ import (
 	"github.com/gbroccoli/HeiCRM/pkg/dbx"
 	"github.com/gbroccoli/HeiCRM/pkg/jwt"
 	"github.com/gbroccoli/HeiCRM/pkg/logx"
+	"github.com/gbroccoli/HeiCRM/pkg/natsx"
 	"github.com/gbroccoli/HeiCRM/pkg/redisx"
 	"github.com/gbroccoli/HeiCRM/services/auth/internal/handler"
 	"github.com/gbroccoli/HeiCRM/services/auth/internal/routes"
@@ -56,11 +57,16 @@ func main() {
 		}
 	}()
 
+	// init nats
+	log.Println("Connecting to NATS")
+	natsx.Open()
+	defer natsx.Close()
+
 	// init jwt
 	j := jwt.New([]byte(config.G().Jwt.SecretKey))
 
 	// init base model handler
-	h := handler.New(dbx.G(), j, redisx.G())
+	h := handler.New(dbx.G(), j, redisx.G(), natsx.G())
 
 	// mount routers
 	routes.Mount(g, h)

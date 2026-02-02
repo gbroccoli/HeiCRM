@@ -24,7 +24,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code": http.StatusUnauthorized,
-			"msg":  "No token",
+			"msg":  "Токен отсутствует",
 		})
 		return
 	}
@@ -33,7 +33,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code": http.StatusUnauthorized,
-			"msg":  "No token",
+			"msg":  "Токен отсутствует",
 		})
 		return
 	}
@@ -44,7 +44,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code": response.InvalidToken,
-			"msg":  "No refresh token",
+			"msg":  "Refresh-токен отсутствует",
 		})
 		return
 	}
@@ -55,7 +55,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code": response.TokenGenerationFailed,
-			"msg":  "Failed to generate access token",
+			"msg":  "Не удалось сгенерировать access-токен",
 		})
 		log.Printf("Failed to generate access token: %v", err)
 		return
@@ -66,7 +66,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code": response.TokenGenerationFailed,
-			"msg":  "Failed to generate refresh token",
+			"msg":  "Не удалось сгенерировать refresh-токен",
 		})
 		log.Printf("Failed to generate refresh token: %v", err)
 		return
@@ -97,7 +97,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code": response.InternalError,
-			"msg":  "Failed to save session",
+			"msg":  "Не удалось сохранить сессию",
 		})
 		log.Printf("Failed to save new refresh token to Redis: %v", err)
 		return
@@ -127,8 +127,8 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 	c.SetCookie(
 		"refresh",
 		"",
-		-1,              // MaxAge -1 deletes the cookie
-		"/api/v1/auth",  // Old path
+		-1,             // MaxAge -1 deletes the cookie
+		"/api/v1/auth", // Old path
 		cookieDomain,
 		isHTTPS,
 		true,

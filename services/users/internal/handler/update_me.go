@@ -8,6 +8,7 @@ import (
 
 	"github.com/gbroccoli/HeiCRM/pkg/models"
 	"github.com/gbroccoli/HeiCRM/pkg/response"
+	natsHandler "github.com/gbroccoli/HeiCRM/services/users/internal/nats"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,20 +16,20 @@ import (
 func (h *Handler) UpdateMe(c *gin.Context) {
 	email, exists := c.Get("email")
 	if !exists {
-		response.Unauthorized(c, "email not found in context")
+		response.Unauthorized(c, "Email не найден в контексте")
 		return
 	}
 
 	emailStr, ok := email.(string)
 	if !ok || emailStr == "" {
-		response.Unauthorized(c, "invalid email in token")
+		response.Unauthorized(c, "Некорректный email в токене")
 		return
 	}
 
 	userID, err := getUserIDByEmail(h.DB, emailStr)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			response.NotFoundError(c, "user not found")
+			response.NotFoundError(c, "Пользователь не найден")
 			return
 		}
 		response.DatabaseErrorResponse(c, err)
@@ -37,7 +38,7 @@ func (h *Handler) UpdateMe(c *gin.Context) {
 
 	var req models.UpdateProfileRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.BadRequestError(c, "invalid request body", err)
+		response.BadRequestError(c, "Некорректное тело запроса", err)
 		return
 	}
 
@@ -62,11 +63,14 @@ func (h *Handler) UpdateMe(c *gin.Context) {
 		return
 	}
 
+	// Publish NATS event
+	natsHandler.PublishProfileUpdated(h.NC, userID, emailStr)
+
 	// Fetch updated profile
 	user, err := getUserWithProfile(h.DB, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			response.NotFoundError(c, "user not found")
+			response.NotFoundError(c, "Пользователь не найден")
 			return
 		}
 		response.DatabaseErrorResponse(c, err)
@@ -75,7 +79,7 @@ func (h *Handler) UpdateMe(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    response.Updated,
-		"message": "profile updated",
+		"message": "Профиль обновлён",
 		"data":    user,
 	})
 }

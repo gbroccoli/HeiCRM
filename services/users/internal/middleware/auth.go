@@ -13,14 +13,14 @@ func AuthMiddleware(j *jwt.JWT) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			response.Unauthorized(c, "missing authorization header")
+			response.Unauthorized(c, "Отсутствует заголовок авторизации")
 			c.Abort()
 			return
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-			response.Unauthorized(c, "invalid authorization header format")
+			response.Unauthorized(c, "Некорректный формат заголовка авторизации")
 			c.Abort()
 			return
 		}
@@ -50,14 +50,14 @@ func RoleMiddleware(allowedRoles ...uint) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roleVal, exists := c.Get("role")
 		if !exists {
-			response.Unauthorized(c, "role not found in context")
+			response.Unauthorized(c, "Роль не найдена в контексте")
 			c.Abort()
 			return
 		}
 
 		userRole, ok := roleVal.(uint)
 		if !ok {
-			response.Unauthorized(c, "invalid role type")
+			response.Unauthorized(c, "Некорректный тип роли")
 			c.Abort()
 			return
 		}
@@ -69,7 +69,7 @@ func RoleMiddleware(allowedRoles ...uint) gin.HandlerFunc {
 			}
 		}
 
-		response.Forbidden(c, "insufficient permissions")
+		response.Forbidden(c, "Недостаточно прав")
 		c.Abort()
 	}
 }

@@ -16,7 +16,7 @@ func (h *Handler) GetActivity(c *gin.Context) {
 	idParam := c.Param("id")
 	userID, err := strconv.ParseUint(idParam, 10, 64)
 	if err != nil {
-		response.BadRequest(c, "invalid user id")
+		response.BadRequest(c, "Некорректный ID пользователя")
 		return
 	}
 

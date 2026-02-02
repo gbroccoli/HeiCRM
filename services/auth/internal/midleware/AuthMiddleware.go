@@ -26,7 +26,7 @@ func AuthMiddleware(j *jwt.JWT) gin.HandlerFunc {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": "missing authorization header",
+				"error": "Отсутствует заголовок авторизации",
 			})
 			c.Abort()
 			return
@@ -43,7 +43,7 @@ func AuthMiddleware(j *jwt.JWT) gin.HandlerFunc {
 
 		if token == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": "invalid token",
+				"error": "Недействительный токен",
 			})
 			c.Abort()
 			return
@@ -86,7 +86,7 @@ func RefreshTokenMiddleware(j *jwt.JWT, r *redis.Client) gin.HandlerFunc {
 		if len(refreshTokens) == 0 {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"code":  response.InvalidToken,
-				"error": "missing refresh token",
+				"error": "Refresh-токен отсутствует",
 			})
 			return
 		}
@@ -123,7 +123,7 @@ func RefreshTokenMiddleware(j *jwt.JWT, r *redis.Client) gin.HandlerFunc {
 		if validClaims == nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"code":  response.InvalidToken,
-				"error": "token has been revoked or is invalid",
+				"error": "Токен отозван или недействителен",
 			})
 			return
 		}

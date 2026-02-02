@@ -9,6 +9,7 @@ import (
 
 	"github.com/gbroccoli/HeiCRM/pkg/models"
 	"github.com/gbroccoli/HeiCRM/pkg/response"
+	natsHandler "github.com/gbroccoli/HeiCRM/services/users/internal/nats"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,13 +18,13 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 	idParam := c.Param("id")
 	userID, err := strconv.ParseUint(idParam, 10, 64)
 	if err != nil {
-		response.BadRequest(c, "invalid user id")
+		response.BadRequest(c, "Некорректный ID пользователя")
 		return
 	}
 
 	var req models.AdminUpdateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.BadRequestError(c, "invalid request body", err)
+		response.BadRequestError(c, "Некорректное тело запроса", err)
 		return
 	}
 
@@ -61,7 +62,7 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 	if req.DateOfBirth != nil && *req.DateOfBirth != "" {
 		parsed, err := time.Parse("2006-01-02", *req.DateOfBirth)
 		if err != nil {
-			response.BadRequest(c, "invalid date_of_birth format, expected YYYY-MM-DD")
+			response.BadRequest(c, "Некорректный формат даты рождения, ожидается ГГГГ-ММ-ДД")
 			return
 		}
 		dob = &parsed
@@ -99,11 +100,16 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 		return
 	}
 
+	// Publish NATS event
+	var userEmail string
+	h.DB.QueryRow("SELECT email FROM users WHERE id = $1", userID).Scan(&userEmail)
+	natsHandler.PublishProfileUpdated(h.NC, userID, userEmail)
+
 	// Fetch updated user
 	user, err := models.GetUserWithProfile(h.DB, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			response.NotFoundError(c, "user not found")
+			response.NotFoundError(c, "Пользователь не найден")
 			return
 		}
 		response.DatabaseErrorResponse(c, err)
@@ -112,7 +118,7 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    response.Updated,
-		"message": "user updated",
+		"message": "Пользователь обновлён",
 		"data":    user,
 	})
 }

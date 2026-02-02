@@ -16,14 +16,14 @@ func (h *Handler) GetUser(c *gin.Context) {
 	idParam := c.Param("id")
 	userID, err := strconv.ParseUint(idParam, 10, 64)
 	if err != nil {
-		response.BadRequest(c, "invalid user id")
+		response.BadRequest(c, "Некорректный ID пользователя")
 		return
 	}
 
 	// Check access: admin/manager can view anyone, regular users can only view themselves
 	role, roleOk := middleware.GetUserRole(c)
 	if !roleOk {
-		response.Unauthorized(c, "role not found in context")
+		response.Unauthorized(c, "Роль не найдена в контексте")
 		return
 	}
 
@@ -33,16 +33,16 @@ func (h *Handler) GetUser(c *gin.Context) {
 		// Regular user — check if requesting own profile
 		email, exists := c.Get("email")
 		if !exists {
-			response.Unauthorized(c, "email not found in context")
+			response.Unauthorized(c, "Email не найден в контексте")
 			return
 		}
 		currentUserID, err := getUserIDByEmail(h.DB, email.(string))
 		if err != nil {
-			response.Unauthorized(c, "user not found")
+			response.Unauthorized(c, "Пользователь не найден")
 			return
 		}
 		if currentUserID != userID {
-			response.Forbidden(c, "insufficient permissions")
+			response.Forbidden(c, "Недостаточно прав")
 			return
 		}
 	}
@@ -50,7 +50,7 @@ func (h *Handler) GetUser(c *gin.Context) {
 	user, err := models.GetUserWithProfile(h.DB, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			response.NotFoundError(c, "user not found")
+			response.NotFoundError(c, "Пользователь не найден")
 			return
 		}
 		response.DatabaseErrorResponse(c, err)

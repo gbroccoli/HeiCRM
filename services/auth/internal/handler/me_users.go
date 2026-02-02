@@ -44,7 +44,7 @@ func (h *Handler) MeUsers(c *gin.Context) {
 	if !exists {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"code": response.AuthRequired,
-			"msg":  "unauthorized",
+			"msg":  "Не авторизован",
 		})
 		return
 	}
@@ -53,7 +53,7 @@ func (h *Handler) MeUsers(c *gin.Context) {
 	if !ok || emailStr == "" {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"code": response.AuthRequired,
-			"msg":  "invalid email in token",
+			"msg":  "Некорректный email в токене",
 		})
 		return
 	}
@@ -64,7 +64,7 @@ func (h *Handler) MeUsers(c *gin.Context) {
 		log.Printf("Failed to get user by email: %v", err)
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 			"code": response.NotFound,
-			"msg":  "user not found",
+			"msg":  "Пользователь не найден",
 		})
 		return
 	}
@@ -75,7 +75,7 @@ func (h *Handler) MeUsers(c *gin.Context) {
 		log.Printf("Failed to get user role: %v", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"code": response.InternalError,
-			"msg":  "failed to get role",
+			"msg":  "Не удалось получить роль",
 		})
 		return
 	}

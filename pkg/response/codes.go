@@ -51,48 +51,48 @@ const (
 // Messages contains human-readable messages for response codes
 var Messages = map[int]string{
 	// Success
-	OK:      "Success",
-	Created: "Created",
-	Updated: "Updated",
-	Deleted: "Deleted",
+	OK:      "Успешно",
+	Created: "Ресурс успешно создан",
+	Updated: "Ресурс успешно обновлён",
+	Deleted: "Ресурс успешно удалён",
 
 	// Data errors
-	InvalidData:     "Invalid data",
-	InvalidFormat:   "Invalid format",
-	MissingRequired: "Missing required field",
-	InvalidRange:    "Value out of range",
-	InvalidType:     "Invalid data type",
+	InvalidData:     "Некорректные данные",
+	InvalidFormat:   "Некорректный формат",
+	MissingRequired: "Отсутствует обязательное поле",
+	InvalidRange:    "Значение вне допустимого диапазона",
+	InvalidType:     "Некорректный тип данных",
 
 	// Authentication
-	AuthRequired:          "Authentication required",
-	InvalidCredentials:    "Invalid credentials",
-	InvalidToken:          "Invalid token",
-	ExpiredToken:          "Token expired",
-	TokenGenerationFailed: "Failed to generate token",
+	AuthRequired:          "Требуется авторизация",
+	InvalidCredentials:    "Неверные учётные данные",
+	InvalidToken:          "Недействительный токен",
+	ExpiredToken:          "Срок действия токена истёк",
+	TokenGenerationFailed: "Не удалось сгенерировать токен",
 
 	// Access
-	AccessDenied:       "Access denied",
-	InsufficientRights: "Insufficient rights",
-	OperationForbidden: "Operation forbidden",
+	AccessDenied:       "Доступ запрещён",
+	InsufficientRights: "Недостаточно прав",
+	OperationForbidden: "Операция запрещена",
 
 	// Resources
-	NotFound:      "Not found",
-	AlreadyExists: "Already exists",
-	Conflict:      "Conflict",
-	Gone:          "Gone",
+	NotFound:      "Не найдено",
+	AlreadyExists: "Уже существует",
+	Conflict:      "Конфликт данных",
+	Gone:          "Ресурс недоступен",
 
 	// Business logic
-	OperationFailed:     "Operation failed",
-	InvalidState:        "Invalid state",
-	ConstraintViolation: "Constraint violation",
-	LimitExceeded:       "Limit exceeded",
+	OperationFailed:     "Операция не выполнена",
+	InvalidState:        "Некорректное состояние",
+	ConstraintViolation: "Нарушение ограничения",
+	LimitExceeded:       "Превышен лимит",
 
 	// System
-	InternalError:        "Internal error",
-	DatabaseError:        "Database error",
-	ServiceUnavailable:   "Service unavailable",
-	ConfigurationError:   "Configuration error",
-	ExternalServiceError: "External service error",
+	InternalError:        "Внутренняя ошибка",
+	DatabaseError:        "Ошибка базы данных",
+	ServiceUnavailable:   "Сервис недоступен",
+	ConfigurationError:   "Ошибка конфигурации",
+	ExternalServiceError: "Ошибка внешнего сервиса",
 }
 
 // GetMessage returns message for given code
@@ -100,5 +100,5 @@ func GetMessage(code int) string {
 	if msg, ok := Messages[code]; ok {
 		return msg
 	}
-	return "Unknown error"
+	return "Неизвестная ошибка"
 }
