@@ -7,11 +7,10 @@ import (
 
 // ServiceConfig holds the configuration for each microservice
 type ServiceConfig struct {
-	AuthServiceURL     string
-	UserServiceURL     string
-	BuildingServiceURL string
-	// Add more services here as they are created:
-	// TicketServiceURL string
+	AuthServiceURL    string
+	UserServiceURL    string
+	HousingServiceURL string
+	TasksServiceURL   string
 }
 
 // Mount configures all API Gateway routes
@@ -40,16 +39,16 @@ func Mount(r *gin.Engine, config ServiceConfig) {
 			users.Any("/*path", proxy.ReverseProxy(config.UserServiceURL))
 		}
 
-		// Building service routes - proxy to buildings microservice
-		buildings := api.Group("/buildings")
+		// Housing service routes - proxy to housing microservice
+		housing := api.Group("/housing")
 		{
-			buildings.Any("/*path", proxy.ReverseProxy(config.BuildingServiceURL))
+			housing.Any("/*path", proxy.ReverseProxy(config.HousingServiceURL))
 		}
 
-		// Future microservices will be added here:
-		// tickets := api.Group("/tickets")
-		// {
-		//     tickets.Any("/*path", proxy.ReverseProxy(config.TicketServiceURL))
-		// }
+		// Tasks service routes - proxy to tasks microservice
+		tasks := api.Group("/tasks")
+		{
+			tasks.Any("/*path", proxy.ReverseProxy(config.TasksServiceURL))
+		}
 	}
 }

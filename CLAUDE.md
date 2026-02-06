@@ -45,6 +45,12 @@ go run ./services/auth/cmd/auth
 
 # User Service (port 8081)
 go run ./services/users/cmd/users
+
+# Housing Service (port 8082)
+go run ./services/housing/cmd/housing
+
+# Tasks Service (port 8083)
+go run ./services/tasks/cmd/tasks
 ```
 
 ### Building
@@ -103,7 +109,7 @@ Current workspace modules:
 ```
 pkg/config, pkg/dbx, pkg/jwt, pkg/logx, pkg/models,
 pkg/natsx, pkg/password, pkg/redisx, pkg/response
-services/apigateway, services/auth, services/users
+services/apigateway, services/auth, services/users, services/housing, services/tasks
 ```
 
 ### Shared Packages (`pkg/`)
@@ -138,6 +144,23 @@ services/apigateway, services/auth, services/users
 - NATS integration for event-driven profile creation
 - Endpoints: get/update own profile, list/get/update/delete users, activity log
 - Dependencies: DB, JWT, NATS
+
+#### Housing Service (port 8082)
+- Management of buildings, rooms, and residents
+- Room types: single, double, block
+- Room status: free, occupied (auto-updated based on occupancy)
+- Resident management with move-in/move-out dates
+- Endpoints: buildings CRUD, rooms CRUD, residents assignment
+- Dependencies: DB, JWT
+
+#### Tasks Service (port 8083)
+- Task/request management system
+- Task types: custom (e.g., Ремонт, Уборка, IT-поддержка)
+- Priorities: low, medium, high, critical
+- Statuses: new, assigned, in_progress, completed, closed
+- Task assignment, comments, status history
+- Endpoints: tasks CRUD, status updates, assign/take, comments, history
+- Dependencies: DB, JWT
 
 ### Service Architecture Pattern
 Each service follows a layered structure:
@@ -176,6 +199,8 @@ Every service follows the same initialization sequence:
   serves:
     auth: "http://localhost:8080"
     users: "http://localhost:8081"
+    housing: "http://localhost:8082"
+    tasks: "http://localhost:8083"
   ```
 
 ### Database
@@ -190,8 +215,15 @@ Every service follows the same initialization sequence:
 - Current schema:
   - `users` — id, name, email (unique), password (bcrypt), avatar, role_id (FK), tg_send, timestamps
   - `roles` — id, name (unique), description; defaults: 0=user, 1=admin, 2=manager
-  - `user_profiles` — user_id (unique FK), first_name, last_name, middle_name, phone, student_id, room_id (no FK), avatar_url, date_of_birth, timestamps
+  - `user_profiles` — user_id (unique FK), first_name, last_name, middle_name, phone, student_id, room_id, avatar_url, date_of_birth, timestamps
   - `user_activity_log` — user_id (FK), action, details (JSONB), ip_address, user_agent, created_at
+  - `buildings` — id, address, floors, description, timestamps
+  - `rooms` — id, building_id (FK), room_number, floor, capacity, room_type (single/double/block), status (free/occupied), timestamps
+  - `residents` — id, room_id (FK), full_name, birth_date, passport_series, passport_number, email, phone, move_in_date, move_out_date, timestamps
+  - `tasks` — id, author_id, assignee_id, room_id, task_type, description, priority, status, timestamps
+  - `task_history` — id, task_id (FK), previous_status, new_status, changed_by, changed_at, comment
+  - `task_comments` — id, task_id (FK), author_id, comment_text, created_at
+  - `task_attachments` — id, task_id (FK), file_name, file_path, file_size, uploaded_by, uploaded_at
 
 ### JWT Token Strategy
 - **Access tokens**: 45-minute expiry, include email (Subject) and role, type="access"

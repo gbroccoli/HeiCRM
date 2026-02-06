@@ -39,4 +39,5 @@ nats:
 serves:
   auth: "http://localhost:8080"
   users: "http://localhost:8081"
-  buildings: "http://localhost:8082"
+  housing: "http://localhost:8082"
+  tasks: "http://localhost:8083"

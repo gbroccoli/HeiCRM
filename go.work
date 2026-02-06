@@ -12,6 +12,7 @@ use (
 	pkg/response
 	services/apigateway
 	services/auth
-	services/buildings
+	services/housing
+	services/tasks
 	services/users
 )

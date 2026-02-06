@@ -4,12 +4,12 @@ import "time"
 
 // Building represents a building (dormitory) entity
 type Building struct {
-	ID        uint64     `json:"id" db:"id"`
-	Name      string     `json:"name" db:"name"`
-	Address   *string    `json:"address,omitempty" db:"address"`
-	Floors    int        `json:"floors" db:"floors"`
-	CreatedAt time.Time  `json:"created_at" db:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty" db:"updated_at"`
+	ID          uint64     `json:"id" db:"id"`
+	Address     string     `json:"address" db:"address"`
+	Floors      int        `json:"floors" db:"floors"`
+	Description *string    `json:"description,omitempty" db:"description"`
+	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt   *time.Time `json:"updated_at,omitempty" db:"updated_at"`
 }
 
 // BuildingWithStats extends Building with room/resident counts
@@ -19,13 +19,28 @@ type BuildingWithStats struct {
 	ResidentCount int `json:"resident_count"`
 }
 
+// RoomType constants
+const (
+	RoomTypeSingle = "single"
+	RoomTypeDouble = "double"
+	RoomTypeBlock  = "block"
+)
+
+// RoomStatus constants
+const (
+	RoomStatusFree     = "free"
+	RoomStatusOccupied = "occupied"
+)
+
 // Room represents a room in a building
 type Room struct {
 	ID         uint64     `json:"id" db:"id"`
 	BuildingID uint64     `json:"building_id" db:"building_id"`
-	Number     string     `json:"number" db:"number"`
+	RoomNumber string     `json:"room_number" db:"room_number"`
 	Floor      int        `json:"floor" db:"floor"`
 	Capacity   int        `json:"capacity" db:"capacity"`
+	RoomType   string     `json:"room_type" db:"room_type"`
+	Status     string     `json:"status" db:"status"`
 	CreatedAt  time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt  *time.Time `json:"updated_at,omitempty" db:"updated_at"`
 }
@@ -33,47 +48,74 @@ type Room struct {
 // RoomWithResidents extends Room with a list of residents
 type RoomWithResidents struct {
 	Room
-	Residents []RoomResident `json:"residents"`
+	Residents []Resident `json:"residents"`
 }
 
-// RoomResident is a simplified user representation for room listings
-type RoomResident struct {
-	UserID    uint64  `json:"user_id"`
-	Name      string  `json:"name"`
-	Email     string  `json:"email"`
-	FirstName *string `json:"first_name,omitempty"`
-	LastName  *string `json:"last_name,omitempty"`
+// Resident represents a person living in a room
+type Resident struct {
+	ID             uint64     `json:"id" db:"id"`
+	RoomID         uint64     `json:"room_id" db:"room_id"`
+	FullName       string     `json:"full_name" db:"full_name"`
+	BirthDate      string     `json:"birth_date" db:"birth_date"`
+	PassportSeries *string    `json:"passport_series,omitempty" db:"passport_series"`
+	PassportNumber *string    `json:"passport_number,omitempty" db:"passport_number"`
+	Email          *string    `json:"email,omitempty" db:"email"`
+	Phone          *string    `json:"phone,omitempty" db:"phone"`
+	MoveInDate     string     `json:"move_in_date" db:"move_in_date"`
+	MoveOutDate    *string    `json:"move_out_date,omitempty" db:"move_out_date"`
+	CreatedAt      time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt      *time.Time `json:"updated_at,omitempty" db:"updated_at"`
 }
 
 // CreateBuildingRequest is the request body for creating a building
 type CreateBuildingRequest struct {
-	Name    string  `json:"name" binding:"required"`
-	Address *string `json:"address"`
-	Floors  int     `json:"floors" binding:"required,min=1"`
+	Address     string  `json:"address" binding:"required"`
+	Floors      int     `json:"floors" binding:"required,min=1"`
+	Description *string `json:"description"`
 }
 
 // UpdateBuildingRequest is the request body for updating a building
 type UpdateBuildingRequest struct {
-	Name    *string `json:"name"`
-	Address *string `json:"address"`
-	Floors  *int    `json:"floors" binding:"omitempty,min=1"`
+	Address     *string `json:"address"`
+	Floors      *int    `json:"floors" binding:"omitempty,min=1"`
+	Description *string `json:"description"`
 }
 
 // CreateRoomRequest is the request body for creating a room
 type CreateRoomRequest struct {
-	Number   string `json:"number" binding:"required"`
-	Floor    int    `json:"floor" binding:"required,min=1"`
-	Capacity int    `json:"capacity" binding:"required,min=1"`
+	RoomNumber string `json:"room_number" binding:"required"`
+	Floor      int    `json:"floor" binding:"required,min=1"`
+	Capacity   int    `json:"capacity" binding:"required,min=1"`
+	RoomType   string `json:"room_type" binding:"required,oneof=single double block"`
 }
 
 // UpdateRoomRequest is the request body for updating a room
 type UpdateRoomRequest struct {
-	Number   *string `json:"number"`
-	Floor    *int    `json:"floor" binding:"omitempty,min=1"`
-	Capacity *int    `json:"capacity" binding:"omitempty,min=1"`
+	RoomNumber *string `json:"room_number"`
+	Floor      *int    `json:"floor" binding:"omitempty,min=1"`
+	Capacity   *int    `json:"capacity" binding:"omitempty,min=1"`
+	RoomType   *string `json:"room_type" binding:"omitempty,oneof=single double block"`
+	Status     *string `json:"status" binding:"omitempty,oneof=free occupied"`
 }
 
-// AssignResidentRequest is the request body for assigning a resident to a room
-type AssignResidentRequest struct {
-	UserID uint64 `json:"user_id" binding:"required"`
+// CreateResidentRequest is the request body for creating a resident
+type CreateResidentRequest struct {
+	FullName       string  `json:"full_name" binding:"required"`
+	BirthDate      string  `json:"birth_date" binding:"required"`
+	PassportSeries *string `json:"passport_series"`
+	PassportNumber *string `json:"passport_number"`
+	Email          *string `json:"email" binding:"omitempty,email"`
+	Phone          *string `json:"phone"`
+	MoveInDate     string  `json:"move_in_date" binding:"required"`
+}
+
+// UpdateResidentRequest is the request body for updating a resident
+type UpdateResidentRequest struct {
+	FullName       *string `json:"full_name"`
+	BirthDate      *string `json:"birth_date"`
+	PassportSeries *string `json:"passport_series"`
+	PassportNumber *string `json:"passport_number"`
+	Email          *string `json:"email" binding:"omitempty,email"`
+	Phone          *string `json:"phone"`
+	MoveOutDate    *string `json:"move_out_date"`
 }

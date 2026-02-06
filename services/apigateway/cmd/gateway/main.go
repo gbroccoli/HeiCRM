@@ -69,16 +69,22 @@ func main() {
 		usersUrl = "http://localhost:8081"
 	}
 
-	buildingsUrl := conf.Serves.Buildings
-	if buildingsUrl == "" {
-		buildingsUrl = "http://localhost:8082"
+	housingUrl := conf.Serves.Housing
+	if housingUrl == "" {
+		housingUrl = "http://localhost:8082"
+	}
+
+	tasksUrl := conf.Serves.Tasks
+	if tasksUrl == "" {
+		tasksUrl = "http://localhost:8083"
 	}
 
 	// Service configuration - microservice URLs
 	serviceConfig := routes.ServiceConfig{
-		AuthServiceURL:     authUrl,
-		UserServiceURL:     usersUrl,
-		BuildingServiceURL: buildingsUrl,
+		AuthServiceURL:    authUrl,
+		UserServiceURL:    usersUrl,
+		HousingServiceURL: housingUrl,
+		TasksServiceURL:   tasksUrl,
 	}
 
 	// Mount all routes
@@ -89,7 +95,8 @@ func main() {
 	log.Printf("API Gateway listening on :%s", port)
 	log.Printf("Proxying auth service: %s", serviceConfig.AuthServiceURL)
 	log.Printf("Proxying users service: %s", serviceConfig.UserServiceURL)
-	log.Printf("Proxying buildings service: %s", serviceConfig.BuildingServiceURL)
+	log.Printf("Proxying housing service: %s", serviceConfig.HousingServiceURL)
+	log.Printf("Proxying tasks service: %s", serviceConfig.TasksServiceURL)
 
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("Failed to start API Gateway: %v", err)
