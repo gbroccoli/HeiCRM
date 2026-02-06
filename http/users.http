@@ -1,0 +1,79 @@
+### ===================================
+### User Service — Пользователи
+### ===================================
+
+@base = http://localhost:8000/api/v1/users
+@token = Bearer eyJhbGciOi...ВАШ_ТОКЕН_ЗДЕСЬ
+@userId = 1
+
+### -----------------------------------
+### Мой профиль
+### -----------------------------------
+GET {{base}}/me
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Обновить свой профиль
+### -----------------------------------
+PUT {{base}}/me
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "first_name": "Иван",
+  "last_name": "Иванов",
+  "middle_name": "Петрович",
+  "phone": "+79001234567"
+}
+
+### -----------------------------------
+### Список пользователей
+### Доступ: admin, manager
+### -----------------------------------
+GET {{base}}/?page=1&page_size=20
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Получить пользователя по ID
+### -----------------------------------
+GET {{base}}/{{userId}}
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Обновить пользователя по ID
+### Доступ: admin
+### -----------------------------------
+PUT {{base}}/{{userId}}
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "name": "Иванов Иван",
+  "role_id": 2,
+  "first_name": "Иван",
+  "last_name": "Иванов",
+  "middle_name": "Петрович",
+  "phone": "+79001234567",
+  "student_id": "STU-001",
+  "room_id": 5,
+  "date_of_birth": "2000-01-15"
+}
+
+### -----------------------------------
+### Удалить пользователя
+### Доступ: admin (нельзя удалить себя)
+### -----------------------------------
+DELETE {{base}}/{{userId}}
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Журнал активности пользователя
+### Доступ: admin
+### -----------------------------------
+GET {{base}}/{{userId}}/activity?page=1&page_size=50
+Content-Type: application/json
+Authorization: {{token}}

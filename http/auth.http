@@ -1,0 +1,53 @@
+### ===================================
+### Auth Service — Аутентификация
+### ===================================
+
+@base = http://localhost:8000/api/v1/auth
+@token = Bearer eyJhbGciOi...ВАШ_ТОКЕН_ЗДЕСЬ
+
+### -----------------------------------
+### Вход (Login)
+### -----------------------------------
+POST {{base}}/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "secret123"
+}
+
+### -----------------------------------
+### Регистрация нового пользователя
+### Требуется: admin или manager
+### -----------------------------------
+POST {{base}}/register
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "name": "Иванов Иван",
+  "email": "ivanov@example.com",
+  "role_id": 0,
+  "tg_send": false
+}
+
+### -----------------------------------
+### Обновление токена (Refresh)
+### Использует HTTPOnly cookie
+### -----------------------------------
+POST {{base}}/refresh
+Content-Type: application/json
+
+### -----------------------------------
+### Выход (Logout)
+### -----------------------------------
+POST {{base}}/logout
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Текущий пользователь (Me)
+### -----------------------------------
+GET {{base}}/me
+Content-Type: application/json
+Authorization: {{token}}

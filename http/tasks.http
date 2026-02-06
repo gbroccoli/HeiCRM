@@ -1,0 +1,171 @@
+### ===================================
+### Tasks Service — Заявки
+### ===================================
+
+@base = http://localhost:8000/api/v1/tasks
+@token = Bearer eyJhbGciOi...ВАШ_ТОКЕН_ЗДЕСЬ
+@taskId = 1
+@assigneeId = 2
+
+### ===================================
+### ЗАЯВКИ (Tasks)
+### ===================================
+
+### -----------------------------------
+### Список заявок
+### Обычный пользователь видит только свои
+### -----------------------------------
+GET {{base}}/?page=1&page_size=20
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Список заявок — фильтр по статусу
+### Статусы: new, assigned, in_progress,
+###          completed, closed
+### -----------------------------------
+GET {{base}}/?status=new
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Список заявок — фильтр по приоритету
+### Приоритеты: low, medium, high, critical
+### -----------------------------------
+GET {{base}}/?priority=high
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Список заявок — назначенные мне
+### -----------------------------------
+GET {{base}}/?assignee=me
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Список заявок — неназначенные
+### -----------------------------------
+GET {{base}}/?assignee=unassigned
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Создать заявку
+### priority: low, medium, high, critical
+### -----------------------------------
+POST {{base}}/
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "room_id": 5,
+  "task_type": "Ремонт",
+  "description": "Сломана дверная ручка в комнате 101",
+  "priority": "high"
+}
+
+### -----------------------------------
+### Получить заявку по ID
+### -----------------------------------
+GET {{base}}/{{taskId}}
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Обновить заявку
+### Доступ: автор или admin
+### -----------------------------------
+PUT {{base}}/{{taskId}}
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "task_type": "Уборка",
+  "description": "Обновлённое описание заявки",
+  "priority": "medium"
+}
+
+### -----------------------------------
+### Удалить заявку
+### Доступ: admin
+### -----------------------------------
+DELETE {{base}}/{{taskId}}
+Content-Type: application/json
+Authorization: {{token}}
+
+### ===================================
+### УПРАВЛЕНИЕ СТАТУСОМ
+### ===================================
+
+### -----------------------------------
+### Изменить статус заявки
+### Доступ: admin, manager
+### Переходы:
+###   new → assigned, in_progress, closed
+###   assigned → in_progress, new, closed
+###   in_progress → completed, assigned, closed
+###   completed → closed, in_progress
+###   closed → (финальный)
+### -----------------------------------
+PUT {{base}}/{{taskId}}/status
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "status": "in_progress",
+  "comment": "Приступаю к выполнению"
+}
+
+### -----------------------------------
+### Назначить исполнителя
+### Доступ: admin, manager
+### -----------------------------------
+PUT {{base}}/{{taskId}}/assign
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "assignee_id": {{assigneeId}}
+}
+
+### -----------------------------------
+### Взять заявку себе
+### Доступ: admin, manager
+### -----------------------------------
+POST {{base}}/{{taskId}}/take
+Content-Type: application/json
+Authorization: {{token}}
+
+### ===================================
+### КОММЕНТАРИИ
+### ===================================
+
+### -----------------------------------
+### Список комментариев к заявке
+### -----------------------------------
+GET {{base}}/{{taskId}}/comments
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Добавить комментарий
+### -----------------------------------
+POST {{base}}/{{taskId}}/comments
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "comment_text": "Проблема обнаружена, нужны запчасти"
+}
+
+### ===================================
+### ИСТОРИЯ ИЗМЕНЕНИЙ
+### ===================================
+
+### -----------------------------------
+### История статусов заявки
+### -----------------------------------
+GET {{base}}/{{taskId}}/history
+Content-Type: application/json
+Authorization: {{token}}

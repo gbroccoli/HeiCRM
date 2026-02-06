@@ -1,0 +1,166 @@
+### ===================================
+### Housing Service — Здания и комнаты
+### ===================================
+
+@base = http://localhost:8000/api/v1/housing
+@token = Bearer eyJhbGciOi...ВАШ_ТОКЕН_ЗДЕСЬ
+@buildingId = 1
+@roomId = 1
+@residentId = 1
+
+### ===================================
+### ЗДАНИЯ (Buildings)
+### ===================================
+
+### -----------------------------------
+### Список зданий
+### Доступ: admin, manager
+### -----------------------------------
+GET {{base}}/?page=1&page_size=20
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Создать здание
+### Доступ: admin
+### -----------------------------------
+POST {{base}}/
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "address": "ул. Ленина, д. 10",
+  "floors": 5,
+  "description": "Общежитие №1"
+}
+
+### -----------------------------------
+### Получить здание по ID
+### -----------------------------------
+GET {{base}}/{{buildingId}}
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Обновить здание
+### Доступ: admin
+### -----------------------------------
+PUT {{base}}/{{buildingId}}
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "address": "ул. Ленина, д. 10а",
+  "floors": 6,
+  "description": "Общежитие №1 (обновлено)"
+}
+
+### -----------------------------------
+### Удалить здание
+### Доступ: admin
+### -----------------------------------
+DELETE {{base}}/{{buildingId}}
+Content-Type: application/json
+Authorization: {{token}}
+
+### ===================================
+### КОМНАТЫ (Rooms)
+### ===================================
+
+### -----------------------------------
+### Список комнат в здании
+### Фильтры: status (free/occupied), floor
+### -----------------------------------
+GET {{base}}/{{buildingId}}/rooms?page=1&page_size=20
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Список комнат — только свободные
+### -----------------------------------
+GET {{base}}/{{buildingId}}/rooms?status=free
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Список комнат — по этажу
+### -----------------------------------
+GET {{base}}/{{buildingId}}/rooms?floor=2
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Создать комнату
+### Доступ: admin
+### room_type: single, double, block
+### -----------------------------------
+POST {{base}}/{{buildingId}}/rooms
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "room_number": 101,
+  "floor": 1,
+  "capacity": 2,
+  "room_type": "double"
+}
+
+### -----------------------------------
+### Получить комнату с жильцами
+### -----------------------------------
+GET {{base}}/{{buildingId}}/rooms/{{roomId}}
+Content-Type: application/json
+Authorization: {{token}}
+
+### -----------------------------------
+### Обновить комнату
+### Доступ: admin
+### -----------------------------------
+PUT {{base}}/{{buildingId}}/rooms/{{roomId}}
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "room_number": 102,
+  "floor": 1,
+  "capacity": 3,
+  "room_type": "block"
+}
+
+### -----------------------------------
+### Удалить комнату
+### Доступ: admin
+### -----------------------------------
+DELETE {{base}}/{{buildingId}}/rooms/{{roomId}}
+Content-Type: application/json
+Authorization: {{token}}
+
+### ===================================
+### ЖИЛЬЦЫ (Residents)
+### ===================================
+
+### -----------------------------------
+### Заселить жильца в комнату
+### Доступ: admin
+### -----------------------------------
+POST {{base}}/{{buildingId}}/rooms/{{roomId}}/residents
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "full_name": "Петрова Мария Сергеевна",
+  "birth_date": "2002-03-15",
+  "passport_series": "4517",
+  "passport_number": "123456",
+  "email": "petrova@example.com",
+  "phone": "+79009876543",
+  "move_in_date": "2025-09-01"
+}
+
+### -----------------------------------
+### Выселить жильца
+### Доступ: admin
+### -----------------------------------
+DELETE {{base}}/{{buildingId}}/rooms/{{roomId}}/residents/{{residentId}}
+Content-Type: application/json
+Authorization: {{token}}
