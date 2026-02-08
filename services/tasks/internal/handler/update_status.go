@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"log"
 	"strconv"
@@ -98,6 +99,26 @@ func (h *Handler) UpdateTaskStatus(c *gin.Context) {
 	)
 	if err != nil {
 		log.Printf("failed to create task history: %v", err)
+	}
+
+	// Publish task.status_changed event
+	if h.NC != nil {
+		event := struct {
+			TaskID         uint64  `json:"task_id"`
+			AuthorID       uint64  `json:"author_id"`
+			AssigneeID     *uint64 `json:"assignee_id,omitempty"`
+			PreviousStatus string  `json:"previous_status"`
+			NewStatus      string  `json:"new_status"`
+			ChangedBy      uint64  `json:"changed_by"`
+			TaskType       string  `json:"task_type"`
+			Description    string  `json:"description"`
+		}{taskID, task.AuthorID, task.AssigneeID, currentStatus, req.Status, userID, task.TaskType, task.Description}
+		data, err := json.Marshal(event)
+		if err != nil {
+			log.Printf("failed to marshal task.status_changed event: %v", err)
+		} else if err := h.NC.Publish("task.status_changed", data); err != nil {
+			log.Printf("failed to publish task.status_changed event: %v", err)
+		}
 	}
 
 	response.SuccessUpdated(c, task)

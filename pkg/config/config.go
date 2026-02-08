@@ -46,6 +46,16 @@ type Config struct {
 		Password string `yaml:"password"`
 	} `yaml:"redis"`
 
+	Email struct {
+		Login       string `yaml:"login"`
+		Password    string `yaml:"password"`
+		Host        string `yaml:"host"`
+		Port        string `yaml:"port"`
+		SSL         bool   `yaml:"ssl"`
+		FromAddress string `yaml:"from_address"`
+		FromName    string `yaml:"from_name"`
+	} `yaml:"email"`
+
 	Serves struct {
 		Auth         string `yaml:"auth"`
 		Users        string `yaml:"users"`

@@ -31,5 +31,11 @@ func Mount(r *gin.Engine, h *handler.Handler, j *jwt.JWT) {
 
 		// History
 		tasks.GET("/:id/history", h.GetHistory)
+
+		// Attachments
+		tasks.POST("/:id/attachments", h.UploadAttachment)
+		tasks.GET("/:id/attachments", h.ListAttachments)
+		tasks.GET("/:id/attachments/:attachmentId/download", h.DownloadAttachment)
+		tasks.DELETE("/:id/attachments/:attachmentId", h.DeleteAttachment)
 	}
 }

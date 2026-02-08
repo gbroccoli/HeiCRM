@@ -1,4 +1,4 @@
-module github.com/gbroccoli/HeiCRM/services/tasks
+module github.com/gbroccoli/HeiCRM/services/notification
 
 go 1.25.3
 

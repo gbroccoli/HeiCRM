@@ -1,5 +1,61 @@
 ---
 services:
+
+  gateway:
+    build: docker/Dockerfile.apigateway
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks:
+      - heicrm
+    depends_on:
+      - auth
+      - users
+      - tasks
+      - notify
+
+  auth:
+    build: docker/Dockerfile.auth
+    networks:
+      - heicrm
+    depends_on:
+      - db
+      - redis
+      - nats
+
+  users:
+    build: docker/Dockerfile.users
+    depends_on:
+      - db
+      - nats
+      - redis
+
+  tasks:
+    build: docker/Dockerfile.tasks
+    networks:
+      - heicrm
+    depends_on:
+      - db
+      - nats
+      - redis
+
+  notify:
+    build: docker/Dockerfile.notify
+    networks:
+      - heicrm
+    depends_on:
+      - db
+      - nats
+      - redis
+
+  housing:
+    build: docker/Dockerfile.house
+    networks:
+      - heicrm
+    depends_on:
+      - db
+      - nats
+      - redis
+
   db:
     image: postgres:18-alpine3.22
     container_name: database

@@ -41,3 +41,4 @@ serves:
   users: "http://localhost:8081"
   housing: "http://localhost:8082"
   tasks: "http://localhost:8083"
+  notification: "http://localhost:8084"

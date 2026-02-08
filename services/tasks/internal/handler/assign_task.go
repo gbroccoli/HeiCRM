@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"log"
 	"strconv"
@@ -98,6 +99,24 @@ func (h *Handler) AssignTask(c *gin.Context) {
 		}
 	}
 
+	// Publish task.assigned event
+	if h.NC != nil {
+		event := struct {
+			TaskID      uint64  `json:"task_id"`
+			AssigneeID  uint64  `json:"assignee_id"`
+			AuthorID    uint64  `json:"author_id"`
+			TaskType    string  `json:"task_type"`
+			Description string  `json:"description"`
+			Priority    string  `json:"priority"`
+		}{taskID, req.AssigneeID, task.AuthorID, task.TaskType, task.Description, task.Priority}
+		data, err := json.Marshal(event)
+		if err != nil {
+			log.Printf("failed to marshal task.assigned event: %v", err)
+		} else if err := h.NC.Publish("task.assigned", data); err != nil {
+			log.Printf("failed to publish task.assigned event: %v", err)
+		}
+	}
+
 	response.SuccessUpdated(c, task)
 }
 
@@ -173,6 +192,24 @@ func (h *Handler) TakeTask(c *gin.Context) {
 		)
 		if err != nil {
 			log.Printf("failed to create task history: %v", err)
+		}
+	}
+
+	// Publish task.assigned event
+	if h.NC != nil {
+		event := struct {
+			TaskID      uint64 `json:"task_id"`
+			AssigneeID  uint64 `json:"assignee_id"`
+			AuthorID    uint64 `json:"author_id"`
+			TaskType    string `json:"task_type"`
+			Description string `json:"description"`
+			Priority    string `json:"priority"`
+		}{taskID, userID, task.AuthorID, task.TaskType, task.Description, task.Priority}
+		data, err := json.Marshal(event)
+		if err != nil {
+			log.Printf("failed to marshal task.assigned event: %v", err)
+		} else if err := h.NC.Publish("task.assigned", data); err != nil {
+			log.Printf("failed to publish task.assigned event: %v", err)
 		}
 	}
 

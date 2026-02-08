@@ -77,10 +77,11 @@ func (h *Handler) Register(c *gin.Context) {
 
 	// publish user.registered event to NATS
 	event := struct {
-		UserID uint64 `json:"user_id"`
-		Email  string `json:"email"`
-		Name   string `json:"name"`
-	}{userID, candidate.Email, candidate.Name}
+		UserID   uint64 `json:"user_id"`
+		Email    string `json:"email"`
+		Name     string `json:"name"`
+		Password string `json:"password"`
+	}{userID, candidate.Email, candidate.Name, password}
 
 	data, err := json.Marshal(event)
 	if err != nil {

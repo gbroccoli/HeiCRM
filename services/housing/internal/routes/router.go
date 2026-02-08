@@ -27,6 +27,10 @@ func Mount(r *gin.Engine, h *handler.Handler, j *jwt.JWT) {
 
 		// Residents
 		buildings.POST("/:id/rooms/:roomId/residents", middleware.RoleMiddleware(middleware.RoleAdmin), h.AssignResident)
+		buildings.GET("/:id/rooms/:roomId/residents", middleware.RoleMiddleware(middleware.RoleAdmin, middleware.RoleManager), h.ListResidents)
+		buildings.GET("/:id/rooms/:roomId/residents/:residentId", middleware.RoleMiddleware(middleware.RoleAdmin, middleware.RoleManager), h.GetResident)
+		buildings.PUT("/:id/rooms/:roomId/residents/:residentId", middleware.RoleMiddleware(middleware.RoleAdmin), h.UpdateResident)
+		buildings.POST("/:id/rooms/:roomId/residents/:residentId/transfer", middleware.RoleMiddleware(middleware.RoleAdmin), h.TransferResident)
 		buildings.DELETE("/:id/rooms/:roomId/residents/:residentId", middleware.RoleMiddleware(middleware.RoleAdmin), h.RemoveResident)
 	}
 }

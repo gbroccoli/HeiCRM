@@ -13,6 +13,7 @@ use (
 	services/apigateway
 	services/auth
 	services/housing
+	services/notification
 	services/tasks
 	services/users
 )

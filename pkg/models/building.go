@@ -119,3 +119,9 @@ type UpdateResidentRequest struct {
 	Phone          *string `json:"phone"`
 	MoveOutDate    *string `json:"move_out_date"`
 }
+
+// TransferResidentRequest is the request body for transferring a resident to another room
+type TransferResidentRequest struct {
+	NewRoomID     uint64 `json:"new_room_id" binding:"required"`
+	NewBuildingID uint64 `json:"new_building_id" binding:"required"`
+}

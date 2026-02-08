@@ -7,10 +7,11 @@ import (
 
 // ServiceConfig holds the configuration for each microservice
 type ServiceConfig struct {
-	AuthServiceURL    string
-	UserServiceURL    string
-	HousingServiceURL string
-	TasksServiceURL   string
+	AuthServiceURL         string
+	UserServiceURL         string
+	HousingServiceURL      string
+	TasksServiceURL        string
+	NotificationServiceURL string
 }
 
 // Mount configures all API Gateway routes
@@ -24,14 +25,6 @@ func Mount(r *gin.Engine, config ServiceConfig) {
 		{
 			auth.Any("/*path", proxy.ReverseProxy(config.AuthServiceURL))
 		}
-
-		// Health check endpoint for API Gateway itself
-		api.GET("/health", func(c *gin.Context) {
-			c.JSON(200, gin.H{
-				"status":  "ok",
-				"service": "api-gateway",
-			})
-		})
 
 		// User service routes - proxy to users microservice
 		users := api.Group("/users")
@@ -50,5 +43,19 @@ func Mount(r *gin.Engine, config ServiceConfig) {
 		{
 			tasks.Any("/*path", proxy.ReverseProxy(config.TasksServiceURL))
 		}
+
+		// Notification service routes - proxy to notification microservice
+		notifications := api.Group("/notifications")
+		{
+			notifications.Any("/*path", proxy.ReverseProxy(config.NotificationServiceURL))
+		}
+
+		// Health check endpoint for API Gateway itself
+		api.GET("/health", func(c *gin.Context) {
+			c.JSON(200, gin.H{
+				"status":  "ok",
+				"service": "api-gateway",
+			})
+		})
 	}
 }

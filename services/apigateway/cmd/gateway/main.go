@@ -79,12 +79,18 @@ func main() {
 		tasksUrl = "http://localhost:8083"
 	}
 
+	notificationUrl := conf.Serves.Notification
+	if notificationUrl == "" {
+		notificationUrl = "http://localhost:8084"
+	}
+
 	// Service configuration - microservice URLs
 	serviceConfig := routes.ServiceConfig{
-		AuthServiceURL:    authUrl,
-		UserServiceURL:    usersUrl,
-		HousingServiceURL: housingUrl,
-		TasksServiceURL:   tasksUrl,
+		AuthServiceURL:         authUrl,
+		UserServiceURL:         usersUrl,
+		HousingServiceURL:      housingUrl,
+		TasksServiceURL:        tasksUrl,
+		NotificationServiceURL: notificationUrl,
 	}
 
 	// Mount all routes
@@ -97,6 +103,7 @@ func main() {
 	log.Printf("Proxying users service: %s", serviceConfig.UserServiceURL)
 	log.Printf("Proxying housing service: %s", serviceConfig.HousingServiceURL)
 	log.Printf("Proxying tasks service: %s", serviceConfig.TasksServiceURL)
+	log.Printf("Proxying notification service: %s", serviceConfig.NotificationServiceURL)
 
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("Failed to start API Gateway: %v", err)

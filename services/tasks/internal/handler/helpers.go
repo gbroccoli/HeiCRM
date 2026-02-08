@@ -71,3 +71,18 @@ func getTaskStatus(db *sql.DB, taskID uint64) (string, error) {
 	err := db.QueryRow("SELECT status FROM tasks WHERE id = $1", taskID).Scan(&status)
 	return status, err
 }
+
+// canAccessTask checks if the user can access the task (author, assignee, admin, or manager)
+func canAccessTask(db *sql.DB, taskID, userID uint64, role uint) (bool, error) {
+	if role == 1 || role == 2 { // admin or manager
+		return true, nil
+	}
+	isAuthor, err := isTaskAuthor(db, taskID, userID)
+	if err != nil {
+		return false, err
+	}
+	if isAuthor {
+		return true, nil
+	}
+	return isTaskAssignee(db, taskID, userID)
+}

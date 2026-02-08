@@ -6,39 +6,38 @@ import (
 
 	"github.com/gbroccoli/HeiCRM/pkg/config"
 	"github.com/gbroccoli/HeiCRM/pkg/dbx"
-	"github.com/gbroccoli/HeiCRM/pkg/jwt"
 	"github.com/gbroccoli/HeiCRM/pkg/logx"
 	"github.com/gbroccoli/HeiCRM/pkg/natsx"
-	"github.com/gbroccoli/HeiCRM/services/tasks/internal/handler"
-	"github.com/gbroccoli/HeiCRM/services/tasks/internal/routes"
+	"github.com/gbroccoli/HeiCRM/services/notification/internal/email"
+	natsub "github.com/gbroccoli/HeiCRM/services/notification/internal/nats"
+	"github.com/gbroccoli/HeiCRM/services/notification/internal/routes"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	// init logger
-	err := logx.Init("logs/tasks.log")
+	err := logx.Init("logs/notification.log")
 	if err != nil {
 		log.Fatalf("failed to init log: %v", err)
 	}
 
 	// read config
-	log.Println("starting tasks service")
+	log.Println("starting notification service")
 	config.MustLoad("config.yaml")
 
-	// get pid process for find in system monitor
+	// get pid
 	log.Printf("PID=%d", os.Getpid())
 
-	// create default gin engine
+	// create gin engine
 	g := gin.Default()
 	g.Use(gin.Recovery())
 	g.Use(gin.Logger())
 
-	// init connect to database
+	// init database
 	log.Println("Connecting to database")
 	dbx.Open()
 	defer func() {
-		err := dbx.Close()
-		if err != nil {
+		if err := dbx.Close(); err != nil {
 			log.Fatalf("failed to close db: %v", err)
 		}
 	}()
@@ -48,19 +47,21 @@ func main() {
 	natsx.Open()
 	defer natsx.Close()
 
-	// init jwt
-	j := jwt.New([]byte(config.G().Jwt.SecretKey))
+	// init email sender
+	sender := email.NewSender()
 
-	// init handler
-	h := handler.New(dbx.G(), j, natsx.G())
+	// start NATS subscribers
+	sub := natsub.NewSubscriber(natsx.G(), dbx.G(), sender)
+	if err := sub.Subscribe(); err != nil {
+		log.Fatalf("failed to subscribe to NATS: %v", err)
+	}
 
 	// mount routes
-	routes.Mount(g, h, j)
+	routes.Mount(g)
 
-	// run api server
-	log.Println("starting http server on :8083")
-	err = g.Run(":8083")
-	if err != nil {
+	// run http server
+	log.Println("starting http server on :8084")
+	if err := g.Run(":8084"); err != nil {
 		log.Fatalf("failed to start http server: %v", err)
 	}
 }
