@@ -2,19 +2,21 @@
 services:
 
   gateway:
-    build: docker/Dockerfile.apigateway
+    build:
+      context: .
+      dockerfile: docker/apigateway/Dockerfile
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8000:8000"
     networks:
       - heicrm
     depends_on:
       - auth
       - users
-      - tasks
-      - notify
 
   auth:
-    build: docker/Dockerfile.auth
+    build:
+      context: .
+      dockerfile: docker/auth/Dockerfile
     networks:
       - heicrm
     depends_on:
@@ -23,23 +25,9 @@ services:
       - nats
 
   users:
-    build: docker/Dockerfile.users
-    depends_on:
-      - db
-      - nats
-      - redis
-
-  tasks:
-    build: docker/Dockerfile.tasks
-    networks:
-      - heicrm
-    depends_on:
-      - db
-      - nats
-      - redis
-
-  notify:
-    build: docker/Dockerfile.notify
+    build:
+      context: .
+      dockerfile: docker/users/Dockerfile
     networks:
       - heicrm
     depends_on:
@@ -48,7 +36,31 @@ services:
       - redis
 
   housing:
-    build: docker/Dockerfile.house
+    build:
+      context: .
+      dockerfile: docker/housing/Dockerfile
+    networks:
+      - heicrm
+    depends_on:
+      - db
+      - nats
+      - redis
+
+  tasks:
+    build:
+      context: .
+      dockerfile: docker/tasks/Dockerfile
+    networks:
+      - heicrm
+    depends_on:
+      - db
+      - nats
+      - redis
+
+  notify:
+    build:
+      context: .
+      dockerfile: docker/notify/Dockerfile
     networks:
       - heicrm
     depends_on:
