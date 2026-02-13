@@ -47,12 +47,11 @@ func (j *JWT) GenerateAccessToken(email string, role uint, tokenType string) (*R
 	}
 
 	if tokenType == "" {
-		tokenType = "access" // default значение
+		tokenType = "access"
 	}
 
 	now := time.Now()
-	expertise := now.Add(45 * time.Minute) // 45 min - balanced security for personal data
-
+	expertise := now.Add(45 * time.Minute)
 	claims := &FieldsClaims{
 		role,
 		tokenType,

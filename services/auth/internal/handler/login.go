@@ -12,14 +12,10 @@ import (
 	"time"
 
 	"github.com/gbroccoli/HeiCRM/pkg/config"
+	"github.com/gbroccoli/HeiCRM/pkg/models"
 	"github.com/gbroccoli/HeiCRM/pkg/response"
 	"github.com/gin-gonic/gin"
 )
-
-type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
-}
 
 type User struct {
 	Id       uint64 `json:"id"`
@@ -59,7 +55,7 @@ func getUser(db *sql.DB, email, password string) (*User, error) {
 	err := db.QueryRow(query, email).Scan(&user.Id, &user.Name, &user.Email, &user.Password, &user.RoleID, &user.TgSend)
 
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, fmt.Errorf("Неверный email или пароль")
+		return nil, fmt.Errorf("неверный email или пароль")
 	}
 
 	if err != nil {
@@ -73,7 +69,7 @@ func (h *Handler) Login(c *gin.Context) {
 
 	ctx := context.Background()
 
-	var userParams LoginRequest
+	var userParams models.LoginRequest
 	if err := c.ShouldBindJSON(&userParams); err != nil {
 		response.ValidationError(c, "Некорректные данные запроса")
 		return

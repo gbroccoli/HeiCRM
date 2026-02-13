@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/gbroccoli/HeiCRM/pkg/events"
 	"github.com/gbroccoli/HeiCRM/services/notification/internal/email"
 	"github.com/nats-io/nats.go"
 )
@@ -27,32 +28,27 @@ func NewSubscriber(nc *nats.Conn, db *sql.DB, sender *email.Sender) *Subscriber 
 
 // Subscribe sets up all NATS subscriptions
 func (s *Subscriber) Subscribe() error {
-	if _, err := s.NC.Subscribe("user.registered", s.handleUserRegistered); err != nil {
+	if _, err := s.NC.Subscribe(events.SubjectUserRegistered, s.handleUserRegistered); err != nil {
 		return err
 	}
-	log.Println("subscribed to user.registered")
+	log.Println("subscribed to", events.SubjectUserRegistered)
 
-	if _, err := s.NC.Subscribe("task.assigned", s.handleTaskAssigned); err != nil {
+	if _, err := s.NC.Subscribe(events.SubjectTaskAssigned, s.handleTaskAssigned); err != nil {
 		return err
 	}
-	log.Println("subscribed to task.assigned")
+	log.Println("subscribed to", events.SubjectTaskAssigned)
 
-	if _, err := s.NC.Subscribe("task.status_changed", s.handleTaskStatusChanged); err != nil {
+	if _, err := s.NC.Subscribe(events.SubjectTaskStatusChanged, s.handleTaskStatusChanged); err != nil {
 		return err
 	}
-	log.Println("subscribed to task.status_changed")
+	log.Println("subscribed to", events.SubjectTaskStatusChanged)
 
 	return nil
 }
 
 // handleUserRegistered sends welcome email with credentials
 func (s *Subscriber) handleUserRegistered(msg *nats.Msg) {
-	var event struct {
-		UserID   uint64 `json:"user_id"`
-		Email    string `json:"email"`
-		Name     string `json:"name"`
-		Password string `json:"password"`
-	}
+	var event events.UserRegisteredEvent
 	if err := json.Unmarshal(msg.Data, &event); err != nil {
 		log.Printf("failed to unmarshal user.registered event: %v", err)
 		return
@@ -76,14 +72,7 @@ func (s *Subscriber) handleUserRegistered(msg *nats.Msg) {
 
 // handleTaskAssigned sends notification to the assignee
 func (s *Subscriber) handleTaskAssigned(msg *nats.Msg) {
-	var event struct {
-		TaskID      uint64 `json:"task_id"`
-		AssigneeID  uint64 `json:"assignee_id"`
-		AuthorID    uint64 `json:"author_id"`
-		TaskType    string `json:"task_type"`
-		Description string `json:"description"`
-		Priority    string `json:"priority"`
-	}
+	var event events.TaskAssignedEvent
 	if err := json.Unmarshal(msg.Data, &event); err != nil {
 		log.Printf("failed to unmarshal task.assigned event: %v", err)
 		return
@@ -109,16 +98,7 @@ func (s *Subscriber) handleTaskAssigned(msg *nats.Msg) {
 
 // handleTaskStatusChanged sends notification to the task author
 func (s *Subscriber) handleTaskStatusChanged(msg *nats.Msg) {
-	var event struct {
-		TaskID         uint64  `json:"task_id"`
-		AuthorID       uint64  `json:"author_id"`
-		AssigneeID     *uint64 `json:"assignee_id,omitempty"`
-		PreviousStatus string  `json:"previous_status"`
-		NewStatus      string  `json:"new_status"`
-		ChangedBy      uint64  `json:"changed_by"`
-		TaskType       string  `json:"task_type"`
-		Description    string  `json:"description"`
-	}
+	var event events.TaskStatusChangedEvent
 	if err := json.Unmarshal(msg.Data, &event); err != nil {
 		log.Printf("failed to unmarshal task.status_changed event: %v", err)
 		return

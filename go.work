@@ -3,6 +3,7 @@ go 1.25.3
 use (
 	pkg/config
 	pkg/dbx
+	pkg/events
 	pkg/jwt
 	pkg/logx
 	pkg/models

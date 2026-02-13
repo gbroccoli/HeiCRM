@@ -6,27 +6,9 @@ import (
 	"log"
 	"time"
 
+	"github.com/gbroccoli/HeiCRM/pkg/events"
 	"github.com/nats-io/nats.go"
 )
-
-// UserRegisteredEvent is the event received when a new user is registered
-type UserRegisteredEvent struct {
-	UserID uint64 `json:"user_id"`
-	Email  string `json:"email"`
-	Name   string `json:"name"`
-}
-
-// ProfileUpdatedEvent is published when a user profile is updated
-type ProfileUpdatedEvent struct {
-	UserID uint64 `json:"user_id"`
-	Email  string `json:"email"`
-}
-
-// UserDeactivatedEvent is published when a user is deactivated/deleted
-type UserDeactivatedEvent struct {
-	UserID uint64 `json:"user_id"`
-	Email  string `json:"email"`
-}
 
 // Subscriber handles NATS message subscriptions
 type Subscriber struct {
@@ -44,7 +26,7 @@ func NewSubscriber(nc *nats.Conn, db *sql.DB) *Subscriber {
 
 // Subscribe sets up all NATS subscriptions
 func (s *Subscriber) Subscribe() error {
-	_, err := s.NC.Subscribe("user.registered", s.handleUserRegistered)
+	_, err := s.NC.Subscribe(events.SubjectUserRegistered, s.handleUserRegistered)
 	if err != nil {
 		return err
 	}
@@ -55,7 +37,7 @@ func (s *Subscriber) Subscribe() error {
 
 // handleUserRegistered creates a profile entry when a new user is registered
 func (s *Subscriber) handleUserRegistered(msg *nats.Msg) {
-	var event UserRegisteredEvent
+	var event events.UserRegisteredEvent
 	if err := json.Unmarshal(msg.Data, &event); err != nil {
 		log.Printf("failed to unmarshal user.registered event: %v", err)
 		return
@@ -81,7 +63,7 @@ func (s *Subscriber) handleUserRegistered(msg *nats.Msg) {
 
 // PublishProfileUpdated publishes a profile updated event
 func PublishProfileUpdated(nc *nats.Conn, userID uint64, email string) {
-	event := ProfileUpdatedEvent{
+	event := events.ProfileUpdatedEvent{
 		UserID: userID,
 		Email:  email,
 	}
@@ -92,14 +74,14 @@ func PublishProfileUpdated(nc *nats.Conn, userID uint64, email string) {
 		return
 	}
 
-	if err := nc.Publish("user.profile_updated", data); err != nil {
+	if err := nc.Publish(events.SubjectProfileUpdated, data); err != nil {
 		log.Printf("failed to publish user.profile_updated: %v", err)
 	}
 }
 
 // PublishUserDeactivated publishes a user deactivated event
 func PublishUserDeactivated(nc *nats.Conn, userID uint64, email string) {
-	event := UserDeactivatedEvent{
+	event := events.UserDeactivatedEvent{
 		UserID: userID,
 		Email:  email,
 	}
@@ -110,7 +92,7 @@ func PublishUserDeactivated(nc *nats.Conn, userID uint64, email string) {
 		return
 	}
 
-	if err := nc.Publish("user.deactivated", data); err != nil {
+	if err := nc.Publish(events.SubjectUserDeactivated, data); err != nil {
 		log.Printf("failed to publish user.deactivated: %v", err)
 	}
 }

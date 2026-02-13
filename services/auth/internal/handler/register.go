@@ -5,28 +5,13 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/gbroccoli/HeiCRM/pkg/events"
+	"github.com/gbroccoli/HeiCRM/pkg/models"
 	"github.com/gbroccoli/HeiCRM/pkg/response"
 	"github.com/gin-gonic/gin"
 )
 
-type RegisterRequest struct {
-	Name     string `json:"name" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password"`
-	RoleID   uint64 `json:"role_id" binding:"required"`
-	TgSend   *bool  `json:"tg_send"`
-}
-
-// IsTgSend validate params on null
-func (register *RegisterRequest) IsTgSend() bool {
-	if register.TgSend == nil {
-		return false
-	}
-
-	return *register.TgSend
-}
-
-func createUser(db *sql.DB, user *RegisterRequest) (uint64, error) {
+func createUser(db *sql.DB, user *models.RegisterRequest) (uint64, error) {
 	query := `INSERT INTO users (name, email, password, role_id, tg_send) VALUES ($1, $2, $3, $4, $5) RETURNING id;`
 	var id uint64
 	err := db.QueryRow(query, user.Name, user.Email, user.Password, user.RoleID, user.TgSend).Scan(&id)
@@ -39,14 +24,14 @@ func createUser(db *sql.DB, user *RegisterRequest) (uint64, error) {
 
 func (h *Handler) Register(c *gin.Context) {
 
-	var candidate RegisterRequest
+	var candidate models.RegisterRequest
 	if err := c.ShouldBindJSON(&candidate); err != nil {
 		response.ValidationError(c, "Некорректные данные запроса")
 		return
 	}
 
 	// create user
-	userDraft := &RegisterRequest{
+	userDraft := &models.RegisterRequest{
 		Name:   candidate.Name,
 		Email:  candidate.Email,
 		RoleID: candidate.RoleID,
@@ -76,17 +61,17 @@ func (h *Handler) Register(c *gin.Context) {
 	log.Printf("User created: id=%d email=%s password=%s", userID, candidate.Email, password)
 
 	// publish user.registered event to NATS
-	event := struct {
-		UserID   uint64 `json:"user_id"`
-		Email    string `json:"email"`
-		Name     string `json:"name"`
-		Password string `json:"password"`
-	}{userID, candidate.Email, candidate.Name, password}
+	event := events.UserRegisteredEvent{
+		UserID:   userID,
+		Email:    candidate.Email,
+		Name:     candidate.Name,
+		Password: password,
+	}
 
 	data, err := json.Marshal(event)
 	if err != nil {
 		log.Printf("Failed to marshal user.registered event: %v", err)
-	} else if err := h.NC.Publish("user.registered", data); err != nil {
+	} else if err := h.NC.Publish(events.SubjectUserRegistered, data); err != nil {
 		log.Printf("Failed to publish user.registered event: %v", err)
 	} else {
 		log.Printf("Published user.registered event for user_id=%d", userID)
