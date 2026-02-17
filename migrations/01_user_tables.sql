@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at timestamptz NOT NULL DEFAULT NOW()
 );
 
-INSERT INTO user (name, email, password, role_id) VALUES
+INSERT INTO users (name, email, password, role_id) VALUES
     ("Admin", "admin@admin.ru", '', 1);
 
 -- Index for faster email lookups during login
