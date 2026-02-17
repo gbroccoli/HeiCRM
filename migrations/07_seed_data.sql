@@ -19,22 +19,22 @@ ON CONFLICT (id) DO NOTHING;
 -- Users (15 пользователей: 1 admin, 2 manager, 12 user)
 -- Пароль для всех: Admin123!@#
 -- ============================================================
-INSERT INTO users (id, name, email, password, avatar, role_id, tg_send) VALUES
-    (1,  'Admin',              'admin@heicrm.ru',        '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 1, false),
-    (2,  'Петров Алексей',     'petrov@heicrm.ru',       '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 2, false),
-    (3,  'Сидорова Мария',     'sidorova@heicrm.ru',     '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 2, false),
-    (4,  'Иванов Дмитрий',     'ivanov@heicrm.ru',       '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
-    (5,  'Козлова Анна',       'kozlova@heicrm.ru',      '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
-    (6,  'Новиков Сергей',     'novikov@heicrm.ru',      '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
-    (7,  'Морозова Елена',     'morozova@heicrm.ru',     '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
-    (8,  'Волков Артём',       'volkov@heicrm.ru',       '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
-    (9,  'Лебедева Ольга',     'lebedeva@heicrm.ru',     '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
-    (10, 'Соколов Максим',     'sokolov@heicrm.ru',      '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
-    (11, 'Попова Наталья',     'popova@heicrm.ru',       '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
-    (12, 'Кузнецов Андрей',    'kuznetsov@heicrm.ru',    '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
-    (13, 'Фёдорова Татьяна',   'fedorova@heicrm.ru',     '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
-    (14, 'Михайлов Владимир',  'mikhailov@heicrm.ru',    '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
-    (15, 'Егорова Ирина',      'egorova@heicrm.ru',      '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, true)
+INSERT INTO users ( name, email, password, avatar, role_id, tg_send) VALUES
+    ('Admin',              'admin@heicrm.ru',        '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 1, false),
+    ('Петров Алексей',     'petrov@heicrm.ru',       '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 2, false),
+    ('Сидорова Мария',     'sidorova@heicrm.ru',     '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 2, false),
+    ('Иванов Дмитрий',     'ivanov@heicrm.ru',       '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
+    ('Козлова Анна',       'kozlova@heicrm.ru',      '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
+    ('Новиков Сергей',     'novikov@heicrm.ru',      '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
+    ('Морозова Елена',     'morozova@heicrm.ru',     '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
+    ('Волков Артём',       'volkov@heicrm.ru',       '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
+    ('Лебедева Ольга',     'lebedeva@heicrm.ru',     '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
+    ('Соколов Максим',     'sokolov@heicrm.ru',      '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
+    ('Попова Наталья',     'popova@heicrm.ru',       '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
+    ('Кузнецов Андрей',    'kuznetsov@heicrm.ru',    '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
+    ('Фёдорова Татьяна',   'fedorova@heicrm.ru',     '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
+    ('Михайлов Владимир',  'mikhailov@heicrm.ru',    '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, false),
+    ('Егорова Ирина',      'egorova@heicrm.ru',      '$2a$10$UmBhHPqAIfchKGrg/uQMcOTFsJP4uiFLGsjcUMk64geFB3/Pqupz2', NULL, 0, true)
 ON CONFLICT (email) DO NOTHING;
 
 SELECT setval('users_id_seq', GREATEST((SELECT MAX(id) FROM users), 15));
