@@ -12,6 +12,15 @@ require (
 	github.com/gin-gonic/gin v1.11.0
 )
 
+replace (
+	github.com/gbroccoli/HeiCRM/pkg/config => ../../pkg/config
+	github.com/gbroccoli/HeiCRM/pkg/dbx => ../../pkg/dbx
+	github.com/gbroccoli/HeiCRM/pkg/jwt => ../../pkg/jwt
+	github.com/gbroccoli/HeiCRM/pkg/logx => ../../pkg/logx
+	github.com/gbroccoli/HeiCRM/pkg/models => ../../pkg/models
+	github.com/gbroccoli/HeiCRM/pkg/response => ../../pkg/response
+)
+
 require (
 	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/bytedance/sonic v1.14.1 // indirect

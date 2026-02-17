@@ -103,11 +103,11 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	// Detect HTTPS - check both env and actual request protocol
-	// This handles tunnels (ngrok, cloudflare) that use HTTPS even in dev
+	// Detect HTTPS based on environment
+	// In dev mode, always treat as HTTP to avoid Secure cookie issues
 	cfg := config.G()
 	isProduction := cfg.Env == "production" || cfg.Env == "prod"
-	isHTTPS := isProduction || isRequestHTTPS(c)
+	isHTTPS := isProduction
 
 	// SameSite strategy:
 	// - Lax: works for most cases, allows cross-site GET (good for dev)

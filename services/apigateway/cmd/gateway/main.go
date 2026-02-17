@@ -32,30 +32,14 @@ func main() {
 	r.Use(gin.Logger())
 
 	// CORS middleware - centralized for all microservices
-	// Add your production frontend domain before deployment
-	cfg := apigatewayConf.G()
-	allowedOrigins := []string{
-		"http://localhost:3000", // React/Next.js dev server
-		"http://localhost:5173", // Vite dev server
-		"http://localhost:4200", // Angular dev server
-		"http://localhost:8081", // Alternative frontend port
-	}
-
-	// Add production origins if not in dev mode
-	if cfg.Env == "production" || cfg.Env == "prod" {
-		// TODO: Replace with your actual production domains
-		allowedOrigins = append(allowedOrigins,
-			"https://crm.yourdomain.com", // Production frontend
-			"https://app.yourdomain.com", // Alternative domain
-		)
-	}
-
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     allowedOrigins,
+		AllowOriginFunc: func(origin string) bool {
+			return true // Allow all origins in development
+		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept"},
 		ExposeHeaders:    []string{"Content-Length", "Authorization"},
-		AllowCredentials: true, // Required for HTTPOnly cookies
+		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
 

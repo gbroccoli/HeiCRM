@@ -151,6 +151,7 @@ services/apigateway, services/auth, services/users, services/housing, services/t
 - Room status: free, occupied (auto-updated based on occupancy)
 - Resident management with move-in/move-out dates
 - Endpoints: buildings CRUD, rooms CRUD, residents assignment
+- Resident ID is passed in JSON body (not URL) for update, remove, and transfer operations
 - Dependencies: DB, JWT
 
 #### Tasks Service (port 8083)

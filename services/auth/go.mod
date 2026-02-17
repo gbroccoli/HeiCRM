@@ -5,6 +5,7 @@ go 1.25.3
 require (
 	github.com/gbroccoli/HeiCRM/pkg/config v0.0.0-20260208035524-aeee0d941816
 	github.com/gbroccoli/HeiCRM/pkg/dbx v0.0.0-20260208035524-aeee0d941816
+	github.com/gbroccoli/HeiCRM/pkg/events v0.0.0-20260213062435-bc6d9876d9cc
 	github.com/gbroccoli/HeiCRM/pkg/jwt v0.0.0-20260208035524-aeee0d941816
 	github.com/gbroccoli/HeiCRM/pkg/logx v0.0.0-20260208035524-aeee0d941816
 	github.com/gbroccoli/HeiCRM/pkg/models v0.0.0-20260208035524-aeee0d941816

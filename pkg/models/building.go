@@ -111,6 +111,7 @@ type CreateResidentRequest struct {
 
 // UpdateResidentRequest is the request body for updating a resident
 type UpdateResidentRequest struct {
+	ResidentID     uint64  `json:"resident_id" binding:"required"`
 	FullName       *string `json:"full_name"`
 	BirthDate      *string `json:"birth_date"`
 	PassportSeries *string `json:"passport_series"`
@@ -120,8 +121,14 @@ type UpdateResidentRequest struct {
 	MoveOutDate    *string `json:"move_out_date"`
 }
 
+// RemoveResidentRequest is the request body for removing a resident
+type RemoveResidentRequest struct {
+	ResidentID uint64 `json:"resident_id" binding:"required"`
+}
+
 // TransferResidentRequest is the request body for transferring a resident to another room
 type TransferResidentRequest struct {
+	ResidentID    uint64 `json:"resident_id" binding:"required"`
 	NewRoomID     uint64 `json:"new_room_id" binding:"required"`
 	NewBuildingID uint64 `json:"new_building_id" binding:"required"`
 }

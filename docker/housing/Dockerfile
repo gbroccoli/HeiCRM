@@ -1,16 +1,21 @@
 # ---------- STAGE 1: build ----------
 FROM golang:1.25 AS build
 
-WORKDIR /src/services/housing
+WORKDIR /src
 
 # сначала зависимости (для кэширования)
-COPY ./services/housing/go.mod ./services/housing/go.sum ./
+COPY ./services/housing/go.mod ./services/housing/go.sum ./services/housing/
+
+# копируем локальные пакеты
+COPY ./pkg/ ./pkg/
+
+WORKDIR /src/services/housing
 RUN go mod download
 
-# копируем остальной код
+# копируем остальной код сервиса
 COPY ./services/housing/ ./
 
-# собираем main из cmd/auth
+# собираем
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build -o /out/housing ./cmd/housing
 

@@ -794,15 +794,16 @@ Gateway prefix: `/api/v1/housing`
 
 ---
 
-#### PUT `/api/v1/housing/:id/rooms/:roomId/residents/:residentId`
+#### PUT `/api/v1/housing/:id/rooms/:roomId/residents`
 
-Обновление данных жильца.
+Обновление данных жильца. ID жильца передаётся в теле запроса.
 
 **Доступ:** admin (role_id=1)
 
 **Request:**
 ```json
 {
+  "resident_id": 1,
   "full_name": "Иванов Иван Петрович",
   "birth_date": "2000-05-15",
   "passport_series": "4520",
@@ -813,7 +814,7 @@ Gateway prefix: `/api/v1/housing`
 }
 ```
 
-Все поля опциональны.
+`resident_id` — обязательное. Остальные поля опциональны.
 
 **Response 200:**
 ```json
@@ -825,11 +826,18 @@ Gateway prefix: `/api/v1/housing`
 
 ---
 
-#### DELETE `/api/v1/housing/:id/rooms/:roomId/residents/:residentId`
+#### DELETE `/api/v1/housing/:id/rooms/:roomId/residents`
 
-Выселение жильца (soft-delete — устанавливает `move_out_date` на сегодня).
+Выселение жильца (soft-delete — устанавливает `move_out_date` на сегодня). ID жильца передаётся в теле запроса.
 
 **Доступ:** admin (role_id=1)
+
+**Request:**
+```json
+{
+  "resident_id": 1
+}
+```
 
 **Response 200:**
 ```json
@@ -845,15 +853,16 @@ Gateway prefix: `/api/v1/housing`
 
 ---
 
-#### POST `/api/v1/housing/:id/rooms/:roomId/residents/:residentId/transfer`
+#### POST `/api/v1/housing/:id/rooms/:roomId/residents/transfer`
 
-Перевод жильца в другую комнату. Операция транзакционная: выселяет из текущей комнаты и заселяет в новую.
+Перевод жильца в другую комнату. Операция транзакционная: выселяет из текущей комнаты и заселяет в новую. ID жильца передаётся в теле запроса.
 
 **Доступ:** admin (role_id=1)
 
 **Request:**
 ```json
 {
+  "resident_id": 1,
   "new_building_id": 2,
   "new_room_id": 5
 }

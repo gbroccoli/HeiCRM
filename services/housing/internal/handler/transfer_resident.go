@@ -27,11 +27,13 @@ func (h *Handler) TransferResident(c *gin.Context) {
 		return
 	}
 
-	residentID, err := strconv.ParseUint(c.Param("residentId"), 10, 64)
-	if err != nil {
-		response.BadRequest(c, "Некорректный ID резидента")
+	var req models.TransferResidentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequestError(c, "Некорректные данные", err)
 		return
 	}
+
+	residentID := req.ResidentID
 
 	exists, err := roomExists(h.DB, buildingID, roomID)
 	if err != nil {
@@ -40,12 +42,6 @@ func (h *Handler) TransferResident(c *gin.Context) {
 	}
 	if !exists {
 		response.NotFoundError(c, "Исходная комната не найдена")
-		return
-	}
-
-	var req models.TransferResidentRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.BadRequestError(c, "Некорректные данные", err)
 		return
 	}
 
