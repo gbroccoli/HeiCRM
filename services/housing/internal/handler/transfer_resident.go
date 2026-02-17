@@ -74,12 +74,12 @@ func (h *Handler) TransferResident(c *gin.Context) {
 
 	// Check resident exists and is active in source room
 	var fullName, birthDate, moveInDate string
-	var passportSeries, passportNumber, email, phone *string
+	var email, phone *string
 	err = h.DB.QueryRow(
-		`SELECT full_name, birth_date, passport_series, passport_number, email, phone, move_in_date
+		`SELECT full_name, birth_date, email, phone, move_in_date
 		 FROM residents WHERE id = $1 AND room_id = $2 AND move_out_date IS NULL`,
 		residentID, roomID,
-	).Scan(&fullName, &birthDate, &passportSeries, &passportNumber, &email, &phone, &moveInDate)
+	).Scan(&fullName, &birthDate, &email, &phone, &moveInDate)
 	if errors.Is(err, sql.ErrNoRows) {
 		response.NotFoundError(c, "Резидент не найден или уже выселен")
 		return
@@ -114,12 +114,12 @@ func (h *Handler) TransferResident(c *gin.Context) {
 	// Insert new record in target room
 	var newResident models.Resident
 	err = tx.QueryRow(
-		`INSERT INTO residents (room_id, full_name, birth_date, passport_series, passport_number, email, phone, move_in_date)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-		 RETURNING id, room_id, full_name, birth_date, passport_series, passport_number, email, phone, move_in_date, move_out_date, created_at, updated_at`,
-		req.NewRoomID, fullName, birthDate, passportSeries, passportNumber, email, phone, newMoveInDate,
+		`INSERT INTO residents (room_id, full_name, birth_date, email, phone, move_in_date)
+		 VALUES ($1, $2, $3, $4, $5, $6)
+		 RETURNING id, room_id, full_name, birth_date, email, phone, move_in_date, move_out_date, created_at, updated_at`,
+		req.NewRoomID, fullName, birthDate, email, phone, newMoveInDate,
 	).Scan(&newResident.ID, &newResident.RoomID, &newResident.FullName, &newResident.BirthDate,
-		&newResident.PassportSeries, &newResident.PassportNumber, &newResident.Email, &newResident.Phone,
+		&newResident.Email, &newResident.Phone,
 		&newResident.MoveInDate, &newResident.MoveOutDate, &newResident.CreatedAt, &newResident.UpdatedAt)
 	if err != nil {
 		log.Printf("failed to create new resident record: %v", err)

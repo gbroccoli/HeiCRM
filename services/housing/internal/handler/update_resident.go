@@ -58,16 +58,6 @@ func (h *Handler) UpdateResident(c *gin.Context) {
 		args = append(args, *req.BirthDate)
 		argIdx++
 	}
-	if req.PassportSeries != nil {
-		query += ", passport_series = $" + strconv.Itoa(argIdx)
-		args = append(args, *req.PassportSeries)
-		argIdx++
-	}
-	if req.PassportNumber != nil {
-		query += ", passport_number = $" + strconv.Itoa(argIdx)
-		args = append(args, *req.PassportNumber)
-		argIdx++
-	}
 	if req.Email != nil {
 		query += ", email = $" + strconv.Itoa(argIdx)
 		args = append(args, *req.Email)
@@ -85,13 +75,13 @@ func (h *Handler) UpdateResident(c *gin.Context) {
 	}
 
 	query += " WHERE id = $" + strconv.Itoa(argIdx) + " AND room_id = $" + strconv.Itoa(argIdx+1) +
-		" RETURNING id, room_id, full_name, birth_date, passport_series, passport_number, email, phone, move_in_date, move_out_date, created_at, updated_at"
+		" RETURNING id, room_id, full_name, birth_date, email, phone, move_in_date, move_out_date, created_at, updated_at"
 	args = append(args, residentID, roomID)
 
 	var r models.Resident
 	err = h.DB.QueryRow(query, args...).Scan(
 		&r.ID, &r.RoomID, &r.FullName, &r.BirthDate,
-		&r.PassportSeries, &r.PassportNumber, &r.Email, &r.Phone,
+		&r.Email, &r.Phone,
 		&r.MoveInDate, &r.MoveOutDate, &r.CreatedAt, &r.UpdatedAt,
 	)
 	if errors.Is(err, sql.ErrNoRows) {

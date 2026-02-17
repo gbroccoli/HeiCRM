@@ -67,10 +67,10 @@ func (h *Handler) RemoveResident(c *gin.Context) {
 	err = h.DB.QueryRow(
 		`UPDATE residents SET move_out_date = $1, updated_at = NOW()
 		 WHERE id = $2
-		 RETURNING id, room_id, full_name, birth_date, passport_series, passport_number, email, phone, move_in_date, move_out_date, created_at, updated_at`,
+		 RETURNING id, room_id, full_name, birth_date, email, phone, move_in_date, move_out_date, created_at, updated_at`,
 		moveOutDate, residentID,
 	).Scan(&resident.ID, &resident.RoomID, &resident.FullName, &resident.BirthDate,
-		&resident.PassportSeries, &resident.PassportNumber, &resident.Email, &resident.Phone,
+		&resident.Email, &resident.Phone,
 		&resident.MoveInDate, &resident.MoveOutDate, &resident.CreatedAt, &resident.UpdatedAt)
 
 	if err != nil {

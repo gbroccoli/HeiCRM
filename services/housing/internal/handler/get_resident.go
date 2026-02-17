@@ -42,12 +42,12 @@ func (h *Handler) GetResident(c *gin.Context) {
 
 	var r models.Resident
 	err = h.DB.QueryRow(
-		`SELECT id, room_id, full_name, birth_date, passport_series, passport_number,
+		`SELECT id, room_id, full_name, birth_date,
 		        email, phone, move_in_date, move_out_date, created_at, updated_at
 		 FROM residents WHERE id = $1 AND room_id = $2`,
 		residentID, roomID,
 	).Scan(&r.ID, &r.RoomID, &r.FullName, &r.BirthDate,
-		&r.PassportSeries, &r.PassportNumber, &r.Email, &r.Phone,
+		&r.Email, &r.Phone,
 		&r.MoveInDate, &r.MoveOutDate, &r.CreatedAt, &r.UpdatedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		response.NotFoundError(c, "Резидент не найден")

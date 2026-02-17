@@ -61,12 +61,12 @@ func (h *Handler) AssignResident(c *gin.Context) {
 	// Create resident
 	var resident models.Resident
 	err = h.DB.QueryRow(
-		`INSERT INTO residents (room_id, full_name, birth_date, passport_series, passport_number, email, phone, move_in_date)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-		 RETURNING id, room_id, full_name, birth_date, passport_series, passport_number, email, phone, move_in_date, move_out_date, created_at, updated_at`,
-		roomID, req.FullName, req.BirthDate, req.PassportSeries, req.PassportNumber, req.Email, req.Phone, req.MoveInDate,
+		`INSERT INTO residents (room_id, full_name, birth_date, email, phone, move_in_date)
+		 VALUES ($1, $2, $3, $4, $5, $6)
+		 RETURNING id, room_id, full_name, birth_date, email, phone, move_in_date, move_out_date, created_at, updated_at`,
+		roomID, req.FullName, req.BirthDate, req.Email, req.Phone, req.MoveInDate,
 	).Scan(&resident.ID, &resident.RoomID, &resident.FullName, &resident.BirthDate,
-		&resident.PassportSeries, &resident.PassportNumber, &resident.Email, &resident.Phone,
+		&resident.Email, &resident.Phone,
 		&resident.MoveInDate, &resident.MoveOutDate, &resident.CreatedAt, &resident.UpdatedAt)
 
 	if err != nil {

@@ -60,7 +60,7 @@ func (h *Handler) ListResidents(c *gin.Context) {
 	}
 
 	// Data query
-	query := `SELECT id, room_id, full_name, birth_date, passport_series, passport_number,
+	query := `SELECT id, room_id, full_name, birth_date,
 	                 email, phone, move_in_date, move_out_date, created_at, updated_at
 	          FROM residents WHERE room_id = $1`
 	if !includeMovedOut {
@@ -79,7 +79,7 @@ func (h *Handler) ListResidents(c *gin.Context) {
 	for rows.Next() {
 		var r models.Resident
 		if err := rows.Scan(&r.ID, &r.RoomID, &r.FullName, &r.BirthDate,
-			&r.PassportSeries, &r.PassportNumber, &r.Email, &r.Phone,
+			&r.Email, &r.Phone,
 			&r.MoveInDate, &r.MoveOutDate, &r.CreatedAt, &r.UpdatedAt); err != nil {
 			response.DatabaseErrorResponse(c, err)
 			return

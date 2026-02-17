@@ -150,8 +150,6 @@ Authorization: {{token}}
 {
   "full_name": "Петрова Мария Сергеевна",
   "birth_date": "2002-03-15",
-  "passport_series": "4517",
-  "passport_number": "123456",
   "email": "petrova@example.com",
   "phone": "+79009876543",
   "move_in_date": "2025-09-01"

@@ -717,15 +717,13 @@ Gateway prefix: `/api/v1/housing`
 {
   "full_name": "Иванов Иван Иванович",
   "birth_date": "2000-05-15",
-  "passport_series": "4520",
-  "passport_number": "123456",
   "email": "ivanov@example.com",
   "phone": "+79001234567",
   "move_in_date": "2025-09-01"
 }
 ```
 
-`passport_series`, `passport_number`, `email`, `phone` — опциональны.
+`email`, `phone` — опциональны.
 Валидация: количество активных жильцов не может превышать `capacity` комнаты.
 
 **Response 201:**
@@ -737,8 +735,6 @@ Gateway prefix: `/api/v1/housing`
     "room_id": 1,
     "full_name": "Иванов Иван Иванович",
     "birth_date": "2000-05-15",
-    "passport_series": "4520",
-    "passport_number": "123456",
     "email": "ivanov@example.com",
     "phone": "+79001234567",
     "move_in_date": "2025-09-01",
@@ -806,8 +802,6 @@ Gateway prefix: `/api/v1/housing`
   "resident_id": 1,
   "full_name": "Иванов Иван Петрович",
   "birth_date": "2000-05-15",
-  "passport_series": "4520",
-  "passport_number": "654321",
   "email": "ivanov_new@example.com",
   "phone": "+79009876543",
   "move_out_date": "2026-06-30"

@@ -57,8 +57,6 @@ type Resident struct {
 	RoomID         uint64     `json:"room_id" db:"room_id"`
 	FullName       string     `json:"full_name" db:"full_name"`
 	BirthDate      string     `json:"birth_date" db:"birth_date"`
-	PassportSeries *string    `json:"passport_series,omitempty" db:"passport_series"`
-	PassportNumber *string    `json:"passport_number,omitempty" db:"passport_number"`
 	Email          *string    `json:"email,omitempty" db:"email"`
 	Phone          *string    `json:"phone,omitempty" db:"phone"`
 	MoveInDate     string     `json:"move_in_date" db:"move_in_date"`
@@ -102,8 +100,6 @@ type UpdateRoomRequest struct {
 type CreateResidentRequest struct {
 	FullName       string  `json:"full_name" binding:"required"`
 	BirthDate      string  `json:"birth_date" binding:"required"`
-	PassportSeries *string `json:"passport_series"`
-	PassportNumber *string `json:"passport_number"`
 	Email          *string `json:"email" binding:"omitempty,email"`
 	Phone          *string `json:"phone"`
 	MoveInDate     string  `json:"move_in_date" binding:"required"`
@@ -114,8 +110,6 @@ type UpdateResidentRequest struct {
 	ResidentID     uint64  `json:"resident_id" binding:"required"`
 	FullName       *string `json:"full_name"`
 	BirthDate      *string `json:"birth_date"`
-	PassportSeries *string `json:"passport_series"`
-	PassportNumber *string `json:"passport_number"`
 	Email          *string `json:"email" binding:"omitempty,email"`
 	Phone          *string `json:"phone"`
 	MoveOutDate    *string `json:"move_out_date"`

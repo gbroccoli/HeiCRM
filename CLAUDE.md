@@ -220,7 +220,7 @@ Every service follows the same initialization sequence:
   - `user_activity_log` — user_id (FK), action, details (JSONB), ip_address, user_agent, created_at
   - `buildings` — id, address, floors, description, timestamps
   - `rooms` — id, building_id (FK), room_number, floor, capacity, room_type (single/double/block), status (free/occupied), timestamps
-  - `residents` — id, room_id (FK), full_name, birth_date, passport_series, passport_number, email, phone, move_in_date, move_out_date, timestamps
+  - `residents` — id, room_id (FK), full_name, birth_date, email, phone, move_in_date, move_out_date, timestamps
   - `tasks` — id, author_id, assignee_id, room_id, task_type, description, priority, status, timestamps
   - `task_history` — id, task_id (FK), previous_status, new_status, changed_by, changed_at, comment
   - `task_comments` — id, task_id (FK), author_id, comment_text, created_at
