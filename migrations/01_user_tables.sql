@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 INSERT INTO user (name, email, password, role_id) VALUES
-    ("Admin", "admin@admin.ru", "", 1);
+    ("Admin", "admin@admin.ru", '', 1);
 
 -- Index for faster email lookups during login
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
