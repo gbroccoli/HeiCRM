@@ -51,9 +51,11 @@ Gateway prefix: `/api/v1/auth`
 
 ### POST `/api/v1/auth/register`
 
-Регистрация нового пользователя. Пароль генерируется автоматически (24 символа).
+Регистрация нового пользователя. Пароль генерируется автоматически (24 символа). Публикует NATS-событие `user.registered`.
 
-**Middleware:** нет
+**Middleware:** AuthMiddleware (Bearer token) + RoleMiddleware (admin, manager)
+
+**Headers:** `Authorization: Bearer <access_token>`
 
 **Request:**
 ```json
@@ -69,8 +71,9 @@ Gateway prefix: `/api/v1/auth`
 ```json
 {
   "code": 1001,
-  "msg": "user created",
-  "password": "aB3$dE..."
+  "user_id": 1,
+  "email": "user@example.com",
+  "name": "John Doe"
 }
 ```
 
@@ -1299,9 +1302,24 @@ Gateway prefix: `/api/v1/tasks`
 
 ---
 
-## Notification Service
+## Notification Service (порт 8084)
 
-Сервис уведомлений. Не имеет HTTP-эндпоинтов. Слушает NATS-события и отправляет email-уведомления.
+Gateway prefix: `/api/v1/notifications`
+
+Сервис уведомлений. Слушает NATS-события и отправляет email-уведомления.
+
+### GET `/api/v1/notifications/health`
+
+Health check сервиса уведомлений.
+
+**Middleware:** нет
+
+**Response 200:**
+```json
+{ "status": "ok", "service": "notification" }
+```
+
+---
 
 ### Обрабатываемые события
 
