@@ -190,21 +190,21 @@ SELECT setval('task_comments_id_seq', GREATEST((SELECT MAX(id) FROM task_comment
 -- User Activity Log (15 записей)
 -- ============================================================
 INSERT INTO user_activity_log (id, user_id, action, details, ip_address, user_agent, created_at) VALUES
-    (1,  1,  'login',            '{"method": "password"}',                       '192.168.1.1',   'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',  '2025-10-01 08:00:00+03'),
-    (2,  1,  'user_registered',  '{"target_user_id": 4, "email": "ivanov@heicrm.ru"}', '192.168.1.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', '2025-10-01 08:10:00+03'),
-    (3,  4,  'login',            '{"method": "password"}',                       '192.168.1.10',  'Mozilla/5.0 (Linux; Android 13)',             '2025-10-01 08:30:00+03'),
-    (4,  4,  'profile_updated',  '{"fields": ["phone", "first_name"]}',          '192.168.1.10',  'Mozilla/5.0 (Linux; Android 13)',             '2025-10-01 08:35:00+03'),
-    (5,  2,  'login',            '{"method": "password"}',                       '192.168.1.5',   'Mozilla/5.0 (Macintosh; Intel Mac OS X)',     '2025-10-01 09:00:00+03'),
-    (6,  5,  'login',            '{"method": "password"}',                       '192.168.1.11',  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)',    '2025-10-02 08:00:00+03'),
-    (7,  5,  'profile_updated',  '{"fields": ["last_name"]}',                    '192.168.1.11',  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)',    '2025-10-02 08:10:00+03'),
-    (8,  1,  'user_updated',     '{"target_user_id": 6, "fields": ["role_id"]}', '192.168.1.1',   'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',  '2025-10-02 10:00:00+03'),
-    (9,  3,  'login',            '{"method": "password"}',                       '192.168.1.6',   'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',  '2025-10-03 07:30:00+03'),
-    (10, 6,  'login',            '{"method": "password"}',                       '192.168.1.12',  'Mozilla/5.0 (Linux; Android 14)',             '2025-10-03 08:00:00+03'),
-    (11, 7,  'login',            '{"method": "password"}',                       '192.168.1.13',  'Mozilla/5.0 (Macintosh; Intel Mac OS X)',     '2025-10-03 09:00:00+03'),
+    (1,  1,  'login',            '{'method': 'password'}',                       '192.168.1.1',   'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',  '2025-10-01 08:00:00+03'),
+    (2,  1,  'user_registered',  '{'target_user_id': 4, 'email': 'ivanov@heicrm.ru'}', '192.168.1.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', '2025-10-01 08:10:00+03'),
+    (3,  4,  'login',            '{'method': 'password'}',                       '192.168.1.10',  'Mozilla/5.0 (Linux; Android 13)',             '2025-10-01 08:30:00+03'),
+    (4,  4,  'profile_updated',  '{'fields': ['phone', 'first_name']}',          '192.168.1.10',  'Mozilla/5.0 (Linux; Android 13)',             '2025-10-01 08:35:00+03'),
+    (5,  2,  'login',            '{'method': 'password'}',                       '192.168.1.5',   'Mozilla/5.0 (Macintosh; Intel Mac OS X)',     '2025-10-01 09:00:00+03'),
+    (6,  5,  'login',            '{'method': 'password'}',                       '192.168.1.11',  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)',    '2025-10-02 08:00:00+03'),
+    (7,  5,  'profile_updated',  '{'fields': ['last_name']}',                    '192.168.1.11',  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)',    '2025-10-02 08:10:00+03'),
+    (8,  1,  'user_updated',     '{'target_user_id': 6, 'fields': ['role_id']}', '192.168.1.1',   'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',  '2025-10-02 10:00:00+03'),
+    (9,  3,  'login',            '{'method': 'password'}',                       '192.168.1.6',   'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',  '2025-10-03 07:30:00+03'),
+    (10, 6,  'login',            '{'method': 'password'}',                       '192.168.1.12',  'Mozilla/5.0 (Linux; Android 14)',             '2025-10-03 08:00:00+03'),
+    (11, 7,  'login',            '{'method': 'password'}',                       '192.168.1.13',  'Mozilla/5.0 (Macintosh; Intel Mac OS X)',     '2025-10-03 09:00:00+03'),
     (12, 1,  'token_refresh',    '{}',                                           '192.168.1.1',   'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',  '2025-10-03 12:00:00+03'),
-    (13, 8,  'login',            '{"method": "password"}',                       '192.168.1.14',  'Mozilla/5.0 (X11; Linux x86_64)',             '2025-10-04 08:00:00+03'),
-    (14, 1,  'user_deleted',     '{"target_user_id": 99}',                       '192.168.1.1',   'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',  '2025-10-05 16:00:00+03'),
-    (15, 9,  'login',            '{"method": "password"}',                       '192.168.1.15',  'Mozilla/5.0 (iPad; CPU OS 17_0)',             '2025-10-06 07:00:00+03')
+    (13, 8,  'login',            '{'method': 'password'}',                       '192.168.1.14',  'Mozilla/5.0 (X11; Linux x86_64)',             '2025-10-04 08:00:00+03'),
+    (14, 1,  'user_deleted',     '{'target_user_id': 99}',                       '192.168.1.1',   'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',  '2025-10-05 16:00:00+03'),
+    (15, 9,  'login',            '{'method': 'password'}',                       '192.168.1.15',  'Mozilla/5.0 (iPad; CPU OS 17_0)',             '2025-10-06 07:00:00+03')
 ON CONFLICT (id) DO NOTHING;
 
 SELECT setval('user_activity_log_id_seq', GREATEST((SELECT MAX(id) FROM user_activity_log), 15));

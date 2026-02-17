@@ -49,13 +49,13 @@ chmod +x scripts/migrate.sh
 
 ```bash
 # Применить все миграции
-goose -dir migrations postgres "postgres://postgres:root@localhost:5432/crm?sslmode=disable" up
+goose -dir migrations postgres 'postgres://postgres:root@localhost:5432/crm?sslmode=disable' up
 
 # Откатить последнюю миграцию
-goose -dir migrations postgres "postgres://postgres:root@localhost:5432/crm?sslmode=disable" down
+goose -dir migrations postgres 'postgres://postgres:root@localhost:5432/crm?sslmode=disable' down
 
 # Посмотреть статус миграций
-goose -dir migrations postgres "postgres://postgres:root@localhost:5432/crm?sslmode=disable" status
+goose -dir migrations postgres 'postgres://postgres:root@localhost:5432/crm?sslmode=disable' status
 
 # Создать новую миграцию
 goose -dir migrations create add_companies_table sql
@@ -133,7 +133,7 @@ DROP TABLE IF EXISTS companies CASCADE;
 
 3. Примените миграцию:
 ```bash
-goose -dir migrations postgres "postgres://..." up
+goose -dir migrations postgres 'postgres://...' up
 ```
 
 ## Важно
